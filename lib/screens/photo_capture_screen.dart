@@ -33,6 +33,7 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
   bool _isCaptureFlash = false; // 촬영 플래시 효과
   XFile? _previewPhoto; // 촬영 결과 미리보기용
   bool _showPreview = false; // 미리보기 표시 여부
+  bool _isProcessing = false; // 촬영 완료 후 처리 중
 
   @override
   void initState() {
@@ -174,7 +175,8 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
                                   strokeWidth: 4,
                                   valueColor: AlwaysStoppedAnimation<Color>(
                                       Colors.pink),
-                                  backgroundColor: Colors.white.withOpacity(0.3),
+                                  backgroundColor:
+                                      Colors.white.withOpacity(0.3),
                                 ),
                               ),
                               // 남은 시간 텍스트
@@ -190,32 +192,47 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
                           ),
                         ),
                       ),
-                    // 촬영 진행 상태 표시 (좌측 상단)
-                    if (widget.cameraService.isCapturing &&
-                        _countdown == 0 &&
-                        !_isCaptureFlash)
-                      Positioned(
-                        top: 20,
-                        left: 20,
-                        child: Container(
-                          padding:
-                              EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: Colors.pink.withOpacity(0.9),
-                            borderRadius: BorderRadius.circular(15),
-                          ),
-                          child: Text(
-                            '${widget.cameraService.captureCount} / 8',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
+                    // 촬영 결과 미리보기 오버레이 - 전체 화면 크기
+                    if (_showPreview && _previewPhoto != null)
+                      Container(
+                        width: double.infinity,
+                        height: double.infinity,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(18),
+                          child: FutureBuilder<Uint8List>(
+                            future: _previewPhoto!.readAsBytes(),
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData) {
+                                return Transform(
+                                  alignment: Alignment.center,
+                                  transform: Matrix4.identity()..scale(-1.0, 1.0), // 좌우반전
+                                  child: Image.memory(
+                                    snapshot.data!,
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                  ),
+                                );
+                              } else {
+                                return Container(
+                                  color: Colors.black.withOpacity(0.7),
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                          Colors.pink),
+                                    ),
+                                  ),
+                                );
+                              }
+                            },
                           ),
                         ),
                       ),
-                    // 촬영 결과 미리보기 오버레이
-                    if (_showPreview && _previewPhoto != null)
+                    // 촬영 완료 후 로딩 화면
+                    if (_isProcessing)
                       Container(
                         width: double.infinity,
                         height: double.infinity,
@@ -224,43 +241,36 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
                           borderRadius: BorderRadius.circular(18),
                         ),
                         child: Center(
-                          child: Container(
-                            width: 300,
-                            height: 300,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(15),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.3),
-                                  blurRadius: 10,
-                                  offset: Offset(0, 5),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 60,
+                                height: 60,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 4,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.pink),
                                 ),
-                              ],
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(15),
-                              child: FutureBuilder<Uint8List>(
-                                future: _previewPhoto!.readAsBytes(),
-                                builder: (context, snapshot) {
-                                  if (snapshot.hasData) {
-                                    return Image.memory(
-                                      snapshot.data!,
-                                      fit: BoxFit.cover,
-                                      width: double.infinity,
-                                      height: double.infinity,
-                                    );
-                                  } else {
-                                    return Center(
-                                      child: CircularProgressIndicator(
-                                        valueColor: AlwaysStoppedAnimation<Color>(
-                                            Colors.pink),
-                                      ),
-                                    );
-                                  }
-                                },
                               ),
-                            ),
+                              SizedBox(height: 30),
+                              Text(
+                                '사진을 처리하고 있습니다...',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                '잠시만 기다려 주세요',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -334,14 +344,25 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
         }
       },
       onCaptureComplete: () {
+        // 촬영 완료 후 로딩 화면 표시
         setState(() {
           _countdown = 0;
           _intervalCountdown = 0;
           _isCaptureFlash = false;
           _showPreview = false;
           _previewPhoto = null;
+          _isProcessing = true;
         });
-        widget.onNext();
+        
+        // 3초 후 다음 화면으로 이동 (로딩 시간 시뮬레이션)
+        Timer(Duration(seconds: 3), () {
+          if (mounted) {
+            setState(() {
+              _isProcessing = false;
+            });
+            widget.onNext();
+          }
+        });
       },
       onPhotoTaken: () {
         // 촬영 시 플래시 효과
@@ -364,7 +385,7 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
           _previewPhoto = photo;
           _showPreview = true;
         });
-        
+
         // 1초 후 미리보기 숨김
         Timer(Duration(seconds: 1), () {
           if (mounted) {

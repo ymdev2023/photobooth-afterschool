@@ -57,8 +57,16 @@ class _FilterSelectionScreenState extends State<FilterSelectionScreen> {
               padding: EdgeInsets.all(isWideScreen ? 30 : 20),
               child: Column(
                 children: [
-                  CommonWidgets.buildStepHeader(
-                      '필터를 선택해주세요', widget.currentStep),
+                  // 제목만 표시, step indicator 제거
+                  Text(
+                    '필터를 선택해주세요',
+                    style: TextStyle(
+                      fontSize: isWideScreen ? 28 : 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                   SizedBox(height: 30),
 
                   // 프레임 미리보기 섹션
@@ -182,6 +190,10 @@ class _FilterSelectionScreenState extends State<FilterSelectionScreen> {
   }
 
   Widget _buildFramePreview(double size) {
+    print('_buildFramePreview 호출됨');
+    print('선택된 사진 수: ${widget.selectedPhotos.length}');
+    print('선택된 프레임: ${widget.selectedFrame}');
+    
     if (widget.selectedPhotos.isEmpty) {
       return Container(
         color: Colors.grey.shade200,
@@ -211,10 +223,13 @@ class _FilterSelectionScreenState extends State<FilterSelectionScreen> {
 
     // 프레임 타입에 따른 레이아웃
     if (widget.selectedFrame == '4컷') {
+      print('4컷 레이아웃 사용');
       return _build4CutLayout(size);
     } else if (widget.selectedFrame == '6컷') {
+      print('6컷 레이아웃 사용');
       return _build6CutLayout(size);
     } else {
+      print('기본 레이아웃 사용');
       return _buildDefaultLayout(size);
     }
   }
@@ -264,10 +279,41 @@ class _FilterSelectionScreenState extends State<FilterSelectionScreen> {
   }
 
   Widget _buildDefaultLayout(double size) {
-    return _buildPhotoContainer(0);
+    // 선택된 사진 수에 따라 동적으로 레이아웃 결정
+    int photoCount = widget.selectedPhotos.length;
+    
+    if (photoCount == 1) {
+      return _buildPhotoContainer(0);
+    } else if (photoCount <= 4) {
+      // 4장 이하는 2x2 그리드로 표시
+      return Column(
+        children: List.generate(2, (row) {
+          return Expanded(
+            child: Row(
+              children: List.generate(2, (col) {
+                int index = row * 2 + col;
+                return Expanded(
+                  child: Container(
+                    margin: EdgeInsets.all(1),
+                    child: index < photoCount 
+                        ? _buildPhotoContainer(index)
+                        : Container(color: Colors.grey.shade300),
+                  ),
+                );
+              }),
+            ),
+          );
+        }),
+      );
+    } else {
+      // 4장 초과는 3x2 그리드로 표시 (6컷과 동일)
+      return _build6CutLayout(size);
+    }
   }
 
   Widget _buildPhotoContainer(int index) {
+    print('_buildPhotoContainer 호출됨 - index: $index, 전체 사진 수: ${widget.selectedPhotos.length}');
+    
     if (index >= widget.selectedPhotos.length) {
       return Container(
         color: Colors.grey.shade300,
@@ -325,30 +371,78 @@ class _FilterSelectionScreenState extends State<FilterSelectionScreen> {
       case 'Sepia':
         return ColorFiltered(
           colorFilter: ColorFilter.matrix([
-            0.393, 0.769, 0.189, 0, 0,
-            0.349, 0.686, 0.168, 0, 0,
-            0.272, 0.534, 0.131, 0, 0,
-            0, 0, 0, 1, 0,
+            0.393,
+            0.769,
+            0.189,
+            0,
+            0,
+            0.349,
+            0.686,
+            0.168,
+            0,
+            0,
+            0.272,
+            0.534,
+            0.131,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
           ]),
           child: image,
         );
       case 'Black & White':
         return ColorFiltered(
           colorFilter: ColorFilter.matrix([
-            0.33, 0.33, 0.33, 0, 0,
-            0.33, 0.33, 0.33, 0, 0,
-            0.33, 0.33, 0.33, 0, 0,
-            0, 0, 0, 1, 0,
+            0.33,
+            0.33,
+            0.33,
+            0,
+            0,
+            0.33,
+            0.33,
+            0.33,
+            0,
+            0,
+            0.33,
+            0.33,
+            0.33,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
           ]),
           child: image,
         );
       case 'Vintage':
         return ColorFiltered(
           colorFilter: ColorFilter.matrix([
-            1.2, 0, 0.2, 0, 0,
-            0, 1.0, 0, 0, 0,
-            0, 0, 0.8, 0, 0,
-            0, 0, 0, 1, 0,
+            1.2,
+            0,
+            0.2,
+            0,
+            0,
+            0,
+            1.0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0.8,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
           ]),
           child: Container(
             decoration: BoxDecoration(

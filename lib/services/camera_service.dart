@@ -140,34 +140,35 @@ class CameraService {
       } else {
         timer.cancel();
         onCountdownUpdate(0); // 카운트다운 완료 알림
-        _startCapturingPhotos(onCaptureComplete, onPhotoTaken, onIntervalUpdate, onPhotoPreview);
+        _startCapturingPhotos(
+            onCaptureComplete, onPhotoTaken, onIntervalUpdate, onPhotoPreview);
       }
     });
   }
 
   void _startCapturingPhotos(
-      VoidCallback onCaptureComplete, 
-      VoidCallback? onPhotoTaken, 
+      VoidCallback onCaptureComplete,
+      VoidCallback? onPhotoTaken,
       Function(int)? onIntervalUpdate,
       Function(XFile)? onPhotoPreview) async {
     // 첫 번째 사진을 바로 촬영
     XFile? capturedPhoto = await _capturePhoto();
     _captureCount++;
-    
+
     if (capturedPhoto != null) {
       onPhotoPreview?.call(capturedPhoto); // 촬영 결과 미리보기
-      
+
       // 1초 후에 다음 단계로
       await Future.delayed(Duration(seconds: 1));
     }
-    
+
     onPhotoTaken?.call(); // 촬영 완료 알림
     print('촬영 완료: ${_captureCount}/8');
 
     // 나머지 사진들을 10초 간격으로 촬영
     if (_captureCount < 8) {
       _intervalCountdown = 10; // 10초 간격 설정
-      
+
       // 1초마다 간격 카운트다운 업데이트
       _intervalTimer = Timer.periodic(Duration(seconds: 1), (timer) {
         if (_intervalCountdown > 0) {
@@ -183,22 +184,23 @@ class CameraService {
       if (_captureCount < 8) {
         XFile? capturedPhoto = await _capturePhoto();
         _captureCount++;
-        
+
         if (capturedPhoto != null) {
           onPhotoPreview?.call(capturedPhoto); // 촬영 결과 미리보기
-          
+
           // 1초 후에 다음 단계로
           await Future.delayed(Duration(seconds: 1));
         }
-        
+
         onPhotoTaken?.call(); // 촬영 완료 알림
         print('촬영 완료: ${_captureCount}/8');
-        
+
         // 다음 촬영을 위한 간격 타이머 재시작
         if (_captureCount < 8) {
           _intervalCountdown = 10;
           _intervalTimer?.cancel();
-          _intervalTimer = Timer.periodic(Duration(seconds: 1), (intervalTimer) {
+          _intervalTimer =
+              Timer.periodic(Duration(seconds: 1), (intervalTimer) {
             if (_intervalCountdown > 0) {
               onIntervalUpdate?.call(_intervalCountdown);
               _intervalCountdown--;
@@ -219,11 +221,13 @@ class CameraService {
         onCaptureComplete();
       }
     });
-  }  Future<XFile?> _capturePhoto() async {
+  }
+
+  Future<XFile?> _capturePhoto() async {
     if (kIsWeb && _canvasContext != null && _videoElement != null) {
       try {
         print('사진 촬영 시작...');
-        
+
         // 비디오를 캔버스에 그리기
         _canvasContext!.drawImage(_videoElement!, 0, 0);
 
@@ -245,7 +249,7 @@ class CameraService {
         _capturedPhotos.add(photo);
         print('사진 촬영 완료: $fileName (크기: ${bytes.length} bytes)');
         print('현재 저장된 사진 수: ${_capturedPhotos.length}');
-        
+
         return photo; // 촬영된 사진 반환
       } catch (e) {
         print('사진 촬영 실패: $e');

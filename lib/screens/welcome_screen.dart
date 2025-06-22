@@ -33,7 +33,7 @@ class WelcomeScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          '📸 AFTERSCHOOL PHOTO BOOTH',
+                          '📸 PHOTO BOOTH',
                           style: TextStyle(
                             fontSize: titleSize,
                             fontWeight: FontWeight.bold,
