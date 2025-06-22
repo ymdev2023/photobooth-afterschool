@@ -29,6 +29,10 @@ class CameraService {
   int get captureCount => _captureCount;
   int get captureCountdown => _captureCountdown;
   html.MediaStream? get mediaStream => _mediaStream;
+
+  List<XFile> getCapturedPhotos() {
+    return List.from(_capturedPhotos);
+  }
   List<XFile> get capturedPhotos => _capturedPhotos;
   String get videoElementId => _videoElementId;
 

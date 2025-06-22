@@ -65,7 +65,7 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
         padding: EdgeInsets.all(20),
         child: Column(
           children: [
-            CommonWidgets.buildStepHeader('사진을 촬영해주세요', '2 / 7'),
+            _buildCameraStepHeader(),
             SizedBox(height: 40),
             Expanded(
               child: Container(
@@ -351,5 +351,39 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
     );
 
     return HtmlElementView(viewType: viewId);
+  }
+
+  Widget _buildCameraStepHeader() {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 20, horizontal: 30),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            '사진을 촬영해주세요',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              '2 / 7',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
