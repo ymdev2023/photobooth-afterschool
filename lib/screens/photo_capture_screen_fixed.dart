@@ -118,7 +118,8 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.pink),
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.pink),
                               ),
                               SizedBox(height: 20),
                               Text(
@@ -149,7 +150,8 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.pink,
                       foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
                       ),
@@ -162,7 +164,8 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
                         SizedBox(width: 8),
                         Text(
                           '촬영 시작',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
