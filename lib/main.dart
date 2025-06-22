@@ -104,9 +104,8 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
   @override
   void initState() {
     super.initState();
-    if (kIsWeb) {
-      _initWebCamera();
-    } else {
+    // 웹 카메라는 필요할 때만 초기화
+    if (!kIsWeb) {
       _initCamera();
     }
   }
@@ -156,29 +155,44 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
   // 웹 카메라 관련 메서드들
   Future<void> _initWebCamera() async {
     try {
+      print('웹 카메라 초기화 시작...');
+      
       // HTML5 getUserMedia API를 사용하여 카메라 스트림 가져오기
       final mediaStream = await html.window.navigator.mediaDevices!.getUserMedia({
-        'video': {'facingMode': 'user', 'width': 640, 'height': 480},
+        'video': {
+          'facingMode': 'user', 
+          'width': {'ideal': 640}, 
+          'height': {'ideal': 480}
+        },
         'audio': false,
       });
 
       _mediaStream = mediaStream;
+      print('카메라 스트림 획득 성공');
       
       // 비디오 엘리먼트 생성 및 설정
       _videoElement = html.VideoElement()
         ..id = _videoElementId
-        ..srcObject = _mediaStream
         ..autoplay = true
         ..muted = true
         ..style.width = '100%'
         ..style.height = '100%'
-        ..style.objectFit = 'cover';
+        ..style.objectFit = 'cover'
+        ..style.backgroundColor = 'black';
+
+      // 스트림을 비디오 엘리먼트에 연결
+      _videoElement!.srcObject = _mediaStream;
+      
+      // 비디오가 로드될 때까지 대기
+      await _videoElement!.onLoadedMetadata.first;
+      print('비디오 메타데이터 로드 완료');
 
       // 플랫폼 뷰에 비디오 엘리먼트 등록
       ui_web.platformViewRegistry.registerViewFactory(
         _videoElementId,
         (int viewId) => _videoElement!,
       );
+      print('플랫폼 뷰 등록 완료');
 
       // 캔버스 엘리먼트 생성 (사진 캡처용)
       _canvasElement = html.CanvasElement(width: 640, height: 480);
@@ -1006,6 +1020,11 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
 
   // 사진 촬영 화면
   Widget _buildPhotoCaptureScreen() {
+    // 웹에서 카메라가 초기화되지 않았다면 초기화 시도
+    if (kIsWeb && !_isWebCameraInitialized) {
+      _initWebCamera();
+    }
+    
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -1092,58 +1111,116 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
                           ),
                         ],
                       ),
-                    ] else if (kIsWeb && _isWebCameraInitialized) ...[
-                      // 웹 카메라 미리보기
-                      Container(
-                        width: 350,
-                        height: 300,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black26,
-                              blurRadius: 10,
-                              offset: Offset(0, 5),
+                    ] else if (kIsWeb) ...[
+                      // 웹 카메라 상태에 따른 UI
+                      if (_isWebCameraInitialized) ...[
+                        // 웹 카메라 미리보기
+                        Container(
+                          width: 350,
+                          height: 300,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            color: Colors.black87,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black26,
+                                blurRadius: 10,
+                                offset: Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: HtmlElementView(
+                              viewType: _videoElementId,
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 20),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // 카메라 전환 버튼
+                            IconButton(
+                              onPressed: _switchWebCamera,
+                              icon: Icon(Icons.flip_camera_ios, color: Colors.white),
+                              iconSize: 40,
+                            ),
+                            SizedBox(width: 20),
+                            // 촬영 버튼
+                            ElevatedButton(
+                              onPressed: _startCountdown,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                foregroundColor: Colors.teal,
+                                padding: EdgeInsets.all(20),
+                                shape: CircleBorder(),
+                                elevation: 10,
+                              ),
+                              child: Icon(
+                                Icons.camera_alt,
+                                size: 40,
+                              ),
                             ),
                           ],
                         ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
-                          child: HtmlElementView(
-                            viewType: _videoElementId,
+                      ] else ...[
+                        // 카메라 초기화 중이거나 실패한 경우
+                        Container(
+                          width: 350,
+                          height: 300,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            color: Colors.black87,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black26,
+                                blurRadius: 10,
+                                offset: Offset(0, 5),
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                CircularProgressIndicator(color: Colors.white),
+                                SizedBox(height: 20),
+                                Text(
+                                  '카메라를 준비중입니다...',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                                SizedBox(height: 10),
+                                Text(
+                                  '카메라 권한을 허용해주세요',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                      SizedBox(height: 20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // 카메라 전환 버튼
-                          IconButton(
-                            onPressed: _switchWebCamera,
-                            icon: Icon(Icons.flip_camera_ios, color: Colors.white),
-                            iconSize: 40,
-                          ),
-                          SizedBox(width: 20),
-                          // 촬영 버튼
-                          ElevatedButton(
-                            onPressed: _startCountdown,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              foregroundColor: Colors.teal,
-                              padding: EdgeInsets.all(20),
-                              shape: CircleBorder(),
-                              elevation: 10,
-                            ),
-                            child: Icon(
-                              Icons.camera_alt,
-                              size: 40,
+                        SizedBox(height: 20),
+                        ElevatedButton(
+                          onPressed: _initWebCamera,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: Colors.teal,
+                            padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25),
                             ),
                           ),
-                        ],
-                      ),
+                          child: Text('카메라 다시 시도'),
+                        ),
+                      ],
                     ] else ...[
-                      // 웹 또는 카메라 초기화 실패 시
+                      // 모바일 카메라 초기화 실패 시
                       Icon(
                         Icons.camera_alt_outlined,
                         size: 150,
@@ -1151,9 +1228,7 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
                       ),
                       SizedBox(height: 30),
                       Text(
-                        kIsWeb 
-                          ? (_isWebCameraInitialized ? '카메라 버튼을 눌러 촬영하세요' : '카메라 접근 권한을 허용해주세요')
-                          : '카메라 버튼을 눌러 촬영하세요',
+                        '카메라 버튼을 눌러 촬영하세요',
                         style: TextStyle(
                           fontSize: 20,
                           color: Colors.white,
@@ -1161,7 +1236,7 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
                       ),
                       SizedBox(height: 50),
                       ElevatedButton(
-                        onPressed: kIsWeb && !_isWebCameraInitialized ? _initWebCamera : _startCountdown,
+                        onPressed: _startCountdown,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           foregroundColor: Colors.teal,
@@ -1171,7 +1246,7 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
                           elevation: 10,
                         ),
                         child: Icon(
-                          kIsWeb && !_isWebCameraInitialized ? Icons.camera_enhance : Icons.camera_alt,
+                          Icons.camera_alt,
                           size: 40,
                         ),
                       ),

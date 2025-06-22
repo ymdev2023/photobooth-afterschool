@@ -12,7 +12,8 @@ git init
 git add .
 git commit -m "Deploy Flutter web app"
 git branch -M gh-pages
-git remote add origin [YOUR_GITHUB_REPO_URL]
+git remote rm origin 2>/dev/null || true
+git remote add origin https://github.com/ymdev2023/photobooth-afterschool.git
 git push -f origin gh-pages
 
-echo "Deployment complete! Check https://[username].github.io/photobooth-afterschool/"
+echo "Deployment complete! Check https://ymdev2023.github.io/photobooth-afterschool/"
