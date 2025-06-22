@@ -130,8 +130,14 @@ class CameraService {
     });
   }
 
-  void _startCapturingPhotos(VoidCallback onCaptureComplete) {
-    _captureTimer = Timer.periodic(Duration(seconds: 10), (timer) async {
+  void _startCapturingPhotos(VoidCallback onCaptureComplete) async {
+    // 첫 번째 사진을 바로 촬영
+    await _capturePhoto();
+    _captureCount++;
+    print('촬영 완료: ${_captureCount}/8');
+
+    // 나머지 사진들을 3초 간격으로 촬영
+    _captureTimer = Timer.periodic(Duration(seconds: 3), (timer) async {
       if (_captureCount < 8) {
         await _capturePhoto();
         _captureCount++;

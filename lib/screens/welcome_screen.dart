@@ -20,47 +20,59 @@ class WelcomeScreen extends StatelessWidget {
             ],
           ),
         ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '📸 포토부스',
-                style: TextStyle(
-                  fontSize: 48,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isWideScreen = constraints.maxWidth > 600;
+              final titleSize = isWideScreen ? 56.0 : 48.0;
+              final subtitleSize = isWideScreen ? 28.0 : 24.0;
+
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      '📸 포토부스',
+                      style: TextStyle(
+                        fontSize: titleSize,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    Text(
+                      '인생네컷을 찍어보세요!',
+                      style: TextStyle(
+                        fontSize: subtitleSize,
+                        color: Colors.white70,
+                      ),
+                    ),
+                    SizedBox(height: 60),
+                    ElevatedButton(
+                      onPressed: onStart,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.pink,
+                        padding: EdgeInsets.symmetric(
+                            horizontal: isWideScreen ? 50 : 40,
+                            vertical: isWideScreen ? 25 : 20),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        elevation: 5,
+                      ),
+                      child: Text(
+                        '시작하기',
+                        style: TextStyle(
+                          fontSize: isWideScreen ? 22 : 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              SizedBox(height: 20),
-              Text(
-                '인생네컷을 찍어보세요!',
-                style: TextStyle(
-                  fontSize: 24,
-                  color: Colors.white70,
-                ),
-              ),
-              SizedBox(height: 60),
-              ElevatedButton(
-                onPressed: onStart,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.pink,
-                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                  elevation: 5,
-                ),
-                child: Text(
-                  '시작하기',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
+              );
+            },
           ),
         ),
       ),

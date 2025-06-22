@@ -16,109 +16,139 @@ class ReviewScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.all(20),
-      child: Column(
-        children: [
-          CommonWidgets.buildStepHeader('최종 확인', '5 / 7'),
-          Expanded(
-            child: Center(
+    return Scaffold(
+      backgroundColor: Colors.grey.shade50,
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isWideScreen = constraints.maxWidth > 600;
+            final titleSize = isWideScreen ? 28.0 : 24.0;
+            final imageWidth = isWideScreen 
+                ? constraints.maxWidth * 0.4 
+                : constraints.maxWidth * 0.8;
+            final imageHeight = imageWidth * 1.33; // 4:3 비율
+            
+            return Padding(
+              padding: EdgeInsets.all(isWideScreen ? 30 : 20),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    '완성된 사진입니다!',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  SizedBox(height: 30),
-                  Container(
-                    width: 300,
-                    height: 400,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 15,
-                          offset: Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: filteredImage != null
-                          ? Image.memory(
-                              filteredImage!,
-                              fit: BoxFit.cover,
-                            )
-                          : Container(
-                              color: Colors.white,
-                              child: Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.image,
-                                      color: Colors.grey.shade600,
-                                      size: 80,
-                                    ),
-                                    SizedBox(height: 20),
-                                    Text(
-                                      '완성된 사진',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.grey.shade700,
+                  CommonWidgets.buildStepHeader('최종 확인', '5 / 7'),
+                  Expanded(
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            '완성된 사진입니다!',
+                            style: TextStyle(
+                              fontSize: titleSize,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          SizedBox(height: 30),
+                          Container(
+                            width: imageWidth,
+                            height: imageHeight,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black26,
+                                  blurRadius: 15,
+                                  offset: Offset(0, 8),
+                                ),
+                              ],
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: filteredImage != null
+                                  ? Image.memory(
+                                      filteredImage!,
+                                      fit: BoxFit.cover,
+                                    )
+                                  : Container(
+                                      color: Colors.white,
+                                      child: Center(
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              Icons.image,
+                                              color: Colors.grey.shade600,
+                                              size: 80,
+                                            ),
+                                            SizedBox(height: 20),
+                                            Text(
+                                              '완성된 사진',
+                                              style: TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.grey.shade700,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
-                                  ],
+                            ),
+                          ),
+                          SizedBox(height: 40),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              ElevatedButton(
+                                onPressed: onBack,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.grey.shade200,
+                                  foregroundColor: Colors.grey.shade700,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: isWideScreen ? 40 : 30, 
+                                    vertical: isWideScreen ? 18 : 15
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(25),
+                                  ),
+                                ),
+                                child: Text(
+                                  '수정하기',
+                                  style: TextStyle(
+                                    fontSize: isWideScreen ? 18 : 16,
+                                  ),
                                 ),
                               ),
-                            ),
+                              SizedBox(width: 20),
+                              ElevatedButton(
+                                onPressed: onNext,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.pink,
+                                  foregroundColor: Colors.white,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: isWideScreen ? 40 : 30, 
+                                    vertical: isWideScreen ? 18 : 15
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(25),
+                                  ),
+                                ),
+                                child: Text(
+                                  '확정하기',
+                                  style: TextStyle(
+                                    fontSize: isWideScreen ? 18 : 16,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 40),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      ElevatedButton(
-                        onPressed: onBack,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white.withOpacity(0.2),
-                          foregroundColor: Colors.white,
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 30, vertical: 15),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25),
-                          ),
-                        ),
-                        child: Text('수정하기'),
-                      ),
-                      SizedBox(width: 20),
-                      ElevatedButton(
-                        onPressed: onNext,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.pink,
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 30, vertical: 15),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25),
-                          ),
-                        ),
-                        child: Text('확정하기'),
-                      ),
-                    ],
                   ),
                 ],
               ),
-            ),
-          ),
-        ],
+            );
+          },
+        ),
       ),
     );
   }
