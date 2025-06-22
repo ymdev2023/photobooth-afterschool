@@ -3,6 +3,7 @@ import '../widgets/common_widgets.dart';
 import '../services/camera_service.dart';
 import 'dart:html' as html;
 import 'dart:ui' as ui;
+import 'dart:async';
 
 class PhotoCaptureScreen extends StatefulWidget {
   final CameraService cameraService;
@@ -24,6 +25,7 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
   int _countdown = 0;
   bool _isInitializing = false;
   String? _errorMessage;
+  bool _isCaptureFlash = false; // 촬영 플래시 효과
 
   @override
   void initState() {
@@ -106,8 +108,18 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
                           ),
                         ),
                       ),
+                    // 촬영 플래시 효과
+                    if (_isCaptureFlash)
+                      Container(
+                        width: double.infinity,
+                        height: double.infinity,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.9),
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                      ),
                     // 촬영 상태 표시
-                    if (widget.cameraService.isCapturing && _countdown == 0)
+                    if (widget.cameraService.isCapturing && _countdown == 0 && !_isCaptureFlash)
                       Container(
                         width: double.infinity,
                         height: double.infinity,
@@ -197,8 +209,24 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
       onCaptureComplete: () {
         setState(() {
           _countdown = 0;
+          _isCaptureFlash = false;
         });
         widget.onNext();
+      },
+      onPhotoTaken: () {
+        // 촬영 시 플래시 효과
+        setState(() {
+          _isCaptureFlash = true;
+        });
+        
+        // 1초 후 플래시 효과 제거
+        Timer(Duration(seconds: 1), () {
+          if (mounted) {
+            setState(() {
+              _isCaptureFlash = false;
+            });
+          }
+        });
       },
     );
   }

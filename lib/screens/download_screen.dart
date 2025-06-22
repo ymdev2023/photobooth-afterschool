@@ -23,7 +23,7 @@ class DownloadScreen extends StatelessWidget {
             final titleSize = isWideScreen ? 56.0 : 48.0;
             final subtitleSize = isWideScreen ? 22.0 : 18.0;
             final qrSize = isWideScreen ? 250.0 : 200.0;
-            
+
             return Padding(
               padding: EdgeInsets.all(isWideScreen ? 30 : 20),
               child: Column(
@@ -83,7 +83,8 @@ class DownloadScreen extends StatelessWidget {
                                       ),
                                     ),
                                     child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         Icon(
                                           Icons.qr_code,

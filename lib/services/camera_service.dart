@@ -110,6 +110,7 @@ class CameraService {
   Future<void> startContinuousCapture({
     required Function(int) onCountdownUpdate,
     required VoidCallback onCaptureComplete,
+    VoidCallback? onPhotoTaken,
   }) async {
     if (_isCapturing) return;
 
@@ -126,15 +127,17 @@ class CameraService {
         _captureCountdown--;
       } else {
         timer.cancel();
-        _startCapturingPhotos(onCaptureComplete);
+        onCountdownUpdate(0); // 카운트다운 완료 알림
+        _startCapturingPhotos(onCaptureComplete, onPhotoTaken);
       }
     });
   }
 
-  void _startCapturingPhotos(VoidCallback onCaptureComplete) async {
+  void _startCapturingPhotos(VoidCallback onCaptureComplete, VoidCallback? onPhotoTaken) async {
     // 첫 번째 사진을 바로 촬영
     await _capturePhoto();
     _captureCount++;
+    onPhotoTaken?.call(); // 촬영 완료 알림
     print('촬영 완료: ${_captureCount}/8');
 
     // 나머지 사진들을 10초 간격으로 촬영
@@ -142,6 +145,7 @@ class CameraService {
       if (_captureCount < 8) {
         await _capturePhoto();
         _captureCount++;
+        onPhotoTaken?.call(); // 촬영 완료 알림
         print('촬영 완료: ${_captureCount}/8');
       } else {
         timer.cancel();
