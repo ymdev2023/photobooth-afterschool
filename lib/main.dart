@@ -143,6 +143,13 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
     });
   }
 
+  void _updateFilteredImage(Uint8List image) {
+    setState(() {
+      filteredImage = image;
+    });
+    print('필터링된 이미지 업데이트됨');
+  }
+
   String _getCurrentStepText() {
     switch (currentStep) {
       case PhotoBoothStep.welcome:
@@ -202,6 +209,7 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
           selectedFrame: selectedFrame,
           selectedPhotos: selectedPhotos,
           onFilterSelected: _updateFilter,
+          onFilteredImageGenerated: _updateFilteredImage,
           onNext: _nextStep,
           onBack: _previousStep,
           currentStep: _getCurrentStepText(),

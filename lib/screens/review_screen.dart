@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'dart:typed_data';
-import '../widgets/common_widgets.dart';
 
 class ReviewScreen extends StatelessWidget {
   final Uint8List? filteredImage;
@@ -34,7 +33,17 @@ class ReviewScreen extends StatelessWidget {
               padding: EdgeInsets.all(isWideScreen ? 30 : 20),
               child: Column(
                 children: [
-                  CommonWidgets.buildStepHeader('최종 확인', currentStep),
+                  // 제목만 표시, step indicator 제거
+                  Text(
+                    '최종 확인',
+                    style: TextStyle(
+                      fontSize: isWideScreen ? 28 : 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 20),
                   Expanded(
                     child: Center(
                       child: Column(

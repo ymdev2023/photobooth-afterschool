@@ -61,8 +61,16 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen> {
               padding: EdgeInsets.all(padding),
               child: Column(
                 children: [
-                  CommonWidgets.buildStepHeader(
-                      '사진을 선택해주세요', widget.currentStep),
+                  // 제목만 표시, step indicator 제거
+                  Text(
+                    '사진을 선택해주세요',
+                    style: TextStyle(
+                      fontSize: isWideScreen ? 28 : 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                   SizedBox(height: 20),
                   // 선택 현황 표시
                   Container(

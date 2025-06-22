@@ -8,6 +8,7 @@ class FilterSelectionScreen extends StatefulWidget {
   final String? selectedFrame;
   final List<XFile> selectedPhotos;
   final Function(String) onFilterSelected;
+  final Function(Uint8List) onFilteredImageGenerated;
   final VoidCallback onNext;
   final VoidCallback onBack;
   final String currentStep;
@@ -18,6 +19,7 @@ class FilterSelectionScreen extends StatefulWidget {
     required this.selectedFrame,
     required this.selectedPhotos,
     required this.onFilterSelected,
+    required this.onFilteredImageGenerated,
     required this.onNext,
     required this.onBack,
     required this.currentStep,
@@ -177,7 +179,7 @@ class _FilterSelectionScreenState extends State<FilterSelectionScreen> {
 
                   CommonWidgets.buildNavigationButtons(
                     onNext:
-                        widget.selectedFilter != null ? widget.onNext : null,
+                        widget.selectedFilter != null ? _onNextPressed : null,
                     onBack: widget.onBack,
                   ),
                 ],
@@ -470,5 +472,30 @@ class _FilterSelectionScreenState extends State<FilterSelectionScreen> {
       default:
         return Icons.filter;
     }
+  }
+
+  Future<void> _onNextPressed() async {
+    if (widget.selectedFilter != null && widget.selectedPhotos.isNotEmpty) {
+      try {
+        // 필터링된 최종 이미지 생성
+        final filteredImage = await _generateFilteredImage();
+
+        // 생성된 이미지를 상위 컴포넌트로 전달
+        widget.onFilteredImageGenerated(filteredImage);
+
+        // 다음 단계로 이동
+        widget.onNext();
+      } catch (e) {
+        print('필터링된 이미지 생성 실패: $e');
+        // 오류가 발생해도 다음 단계로 이동
+        widget.onNext();
+      }
+    }
+  }
+
+  Future<Uint8List> _generateFilteredImage() async {
+    // 임시로 첫 번째 사진을 사용 (실제로는 프레임과 필터가 적용된 이미지를 생성해야 함)
+    final firstPhoto = widget.selectedPhotos.first;
+    return await firstPhoto.readAsBytes();
   }
 }

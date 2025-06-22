@@ -47,7 +47,16 @@ class FrameSelectionScreen extends StatelessWidget {
           padding: EdgeInsets.all(20),
           child: Column(
             children: [
-              CommonWidgets.buildStepHeader('프레임을 선택해주세요', currentStep),
+              // 제목만 표시, step indicator 제거
+              Text(
+                '프레임을 선택해주세요',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+                textAlign: TextAlign.center,
+              ),
               SizedBox(height: 40),
               Expanded(
                 child: LayoutBuilder(

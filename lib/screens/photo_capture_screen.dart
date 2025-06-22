@@ -487,62 +487,49 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
               color: Colors.white,
             ),
           ),
-          // 헤더의 원형 카운트다운 인디케이터
-          if (widget.cameraService.isCapturing && _intervalCountdown > 0)
-            Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.7),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.3),
-                  width: 2,
-                ),
-              ),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  // 원형 프로그레스 인디케이터
-                  SizedBox(
-                    width: 45,
-                    height: 45,
-                    child: CircularProgressIndicator(
-                      value: (_intervalCountdown) / 10.0,
-                      strokeWidth: 3,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.pink),
-                      backgroundColor: Colors.white.withOpacity(0.3),
+          // 헤더의 원형 카운트다운 인디케이터 (깜박임 방지)
+          Container(
+            width: 60,
+            height: 60,
+            child: widget.cameraService.isCapturing && _intervalCountdown > 0
+                ? Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.7),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.3),
+                        width: 2,
+                      ),
                     ),
-                  ),
-                  // 남은 시간 텍스트
-                  Text(
-                    _intervalCountdown.toString(),
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // 원형 프로그레스 인디케이터
+                        SizedBox(
+                          width: 45,
+                          height: 45,
+                          child: CircularProgressIndicator(
+                            value: (_intervalCountdown) / 10.0,
+                            strokeWidth: 3,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.pink),
+                            backgroundColor: Colors.white.withOpacity(0.3),
+                          ),
+                        ),
+                        // 남은 시간 텍스트
+                        Text(
+                          _intervalCountdown.toString(),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
-            )
-          else
-            // 일반 step indicator (촬영 중이 아닐 때)
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                widget.currentStep,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                ),
-              ),
-            ),
+                  )
+                : SizedBox.shrink(), // step indicator 완전 제거
+          ),
         ],
       ),
     );

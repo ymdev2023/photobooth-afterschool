@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import '../widgets/common_widgets.dart';
 
 class DownloadScreen extends StatelessWidget {
   final String? downloadUrl;
@@ -30,7 +29,17 @@ class DownloadScreen extends StatelessWidget {
               padding: EdgeInsets.all(isWideScreen ? 30 : 20),
               child: Column(
                 children: [
-                  CommonWidgets.buildStepHeader('다운로드', currentStep),
+                  // 제목만 표시, step indicator 제거
+                  Text(
+                    '다운로드',
+                    style: TextStyle(
+                      fontSize: isWideScreen ? 28 : 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 20),
                   Expanded(
                     child: Center(
                       child: Column(
@@ -74,35 +83,11 @@ class DownloadScreen extends StatelessWidget {
                                     size: qrSize,
                                     gapless: false,
                                   )
-                                : Container(
-                                    width: qrSize,
-                                    height: qrSize,
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey.shade200,
-                                      border: Border.all(
-                                        color: Colors.grey.shade300,
-                                        width: 2,
-                                      ),
-                                    ),
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          Icons.qr_code,
-                                          size: 60,
-                                          color: Colors.grey.shade400,
-                                        ),
-                                        SizedBox(height: 10),
-                                        Text(
-                                          'QR 코드 생성 중...',
-                                          style: TextStyle(
-                                            color: Colors.grey.shade600,
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                                : QrImageView(
+                                    data: 'https://photobooth-afterschool.pages.dev/download',
+                                    version: QrVersions.auto,
+                                    size: qrSize,
+                                    gapless: false,
                                   ),
                           ),
                           SizedBox(height: 30),
@@ -115,27 +100,68 @@ class DownloadScreen extends StatelessWidget {
                             textAlign: TextAlign.center,
                           ),
                           SizedBox(height: 50),
-                          ElevatedButton(
-                            onPressed: onRestart,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.pink,
-                              foregroundColor: Colors.white,
-                              padding: EdgeInsets.symmetric(
-                                horizontal: isWideScreen ? 50 : 40,
-                                vertical: isWideScreen ? 20 : 18,
+                          // 버튼들
+                          Wrap(
+                            spacing: 15,
+                            runSpacing: 15,
+                            alignment: WrapAlignment.center,
+                            children: [
+                              ElevatedButton.icon(
+                                onPressed: onRestart,
+                                icon: Icon(Icons.home),
+                                label: Text('처음으로'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.pink,
+                                  foregroundColor: Colors.white,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: isWideScreen ? 25 : 20,
+                                    vertical: isWideScreen ? 15 : 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(25),
+                                  ),
+                                  elevation: 5,
+                                ),
                               ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30),
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  // TODO: 사진 다운로드 기능 구현
+                                },
+                                icon: Icon(Icons.photo),
+                                label: Text('사진 다운로드'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue,
+                                  foregroundColor: Colors.white,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: isWideScreen ? 25 : 20,
+                                    vertical: isWideScreen ? 15 : 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(25),
+                                  ),
+                                  elevation: 5,
+                                ),
                               ),
-                              elevation: 5,
-                            ),
-                            child: Text(
-                              '다시 찍기',
-                              style: TextStyle(
-                                fontSize: isWideScreen ? 20 : 18,
-                                fontWeight: FontWeight.bold,
+                              ElevatedButton.icon(
+                                onPressed: () {
+                                  // TODO: 영상 다운로드 기능 구현
+                                },
+                                icon: Icon(Icons.videocam),
+                                label: Text('영상 다운로드'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                  foregroundColor: Colors.white,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: isWideScreen ? 25 : 20,
+                                    vertical: isWideScreen ? 15 : 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(25),
+                                  ),
+                                  elevation: 5,
+                                ),
                               ),
-                            ),
+                            ],
                           ),
                         ],
                       ),
