@@ -9,12 +9,14 @@ class PhotoCaptureScreen extends StatefulWidget {
   final CameraService cameraService;
   final VoidCallback onNext;
   final VoidCallback onBack;
+  final String currentStep;
 
   const PhotoCaptureScreen({
     Key? key,
     required this.cameraService,
     required this.onNext,
     required this.onBack,
+    required this.currentStep,
   }) : super(key: key);
 
   @override
@@ -88,7 +90,7 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
                         child: _buildCameraContent(),
                       ),
                     ),
-                    // 카운트다운 오버레이
+                    // 카운트다운 오버레이 - 깜박임 없이 부드러운 전환
                     if (_countdown > 0)
                       Container(
                         width: double.infinity,
@@ -98,12 +100,30 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
                           borderRadius: BorderRadius.circular(18),
                         ),
                         child: Center(
-                          child: Text(
-                            _countdown.toString(),
-                            style: TextStyle(
-                              fontSize: 120,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                          child: AnimatedSwitcher(
+                            duration: Duration(milliseconds: 200),
+                            transitionBuilder:
+                                (Widget child, Animation<double> animation) {
+                              return ScaleTransition(
+                                scale: animation,
+                                child: child,
+                              );
+                            },
+                            child: Text(
+                              _countdown.toString(),
+                              key: ValueKey<int>(_countdown),
+                              style: TextStyle(
+                                fontSize: 120,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                shadows: [
+                                  Shadow(
+                                    offset: Offset(2, 2),
+                                    blurRadius: 4,
+                                    color: Colors.black.withOpacity(0.3),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
@@ -118,32 +138,41 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
                           borderRadius: BorderRadius.circular(18),
                         ),
                       ),
-                    // 촬영 상태 표시
+                    // 촬영 상태 표시 - 오버레이 최소화
                     if (widget.cameraService.isCapturing &&
                         _countdown == 0 &&
                         !_isCaptureFlash)
-                      Container(
-                        width: double.infinity,
-                        height: double.infinity,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.8),
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                        child: Center(
-                          child: Column(
+                      Positioned(
+                        top: 20,
+                        left: 20,
+                        right: 20,
+                        child: Container(
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.pink.withOpacity(0.9),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              CircularProgressIndicator(
-                                valueColor:
-                                    AlwaysStoppedAnimation<Color>(Colors.pink),
+                              SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white),
+                                ),
                               ),
-                              SizedBox(height: 20),
+                              SizedBox(width: 12),
                               Text(
-                                '사진을 촬영하는 중...',
+                                '촬영 중... (${widget.cameraService.captureCount}/8)',
                                 style: TextStyle(
-                                  fontSize: 18,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
+                                  color: Colors.white,
                                 ),
                               ),
                             ],
@@ -204,9 +233,12 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
   void _startCapture() {
     widget.cameraService.startContinuousCapture(
       onCountdownUpdate: (countdown) {
-        setState(() {
-          _countdown = countdown;
-        });
+        // 카운트다운이 실제로 변경된 경우에만 setState 호출
+        if (_countdown != countdown) {
+          setState(() {
+            _countdown = countdown;
+          });
+        }
       },
       onCaptureComplete: () {
         setState(() {
@@ -376,7 +408,7 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              '2 / 8',
+              widget.currentStep,
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,

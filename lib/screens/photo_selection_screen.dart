@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'dart:typed_data';
 import '../widgets/common_widgets.dart';
 
 class PhotoSelectionScreen extends StatefulWidget {
@@ -33,6 +34,13 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen> {
   void initState() {
     super.initState();
     _selectedPhotos = List.from(widget.selectedPhotos);
+
+    // 전달받은 사진 정보 로깅
+    print('PhotoSelectionScreen 초기화');
+    print('전달받은 사진 수: ${widget.capturedPhotos.length}');
+    for (int i = 0; i < widget.capturedPhotos.length; i++) {
+      print('  ${i + 1}. ${widget.capturedPhotos[i].name}');
+    }
   }
 
   @override
@@ -149,7 +157,7 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen> {
                                   ),
                                   child: Stack(
                                     children: [
-                                      // 사진 표시 (실제로는 Image.file을 사용해야 함)
+                                      // 실제 사진 표시
                                       Container(
                                         width: double.infinity,
                                         height: double.infinity,
@@ -161,29 +169,72 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen> {
                                         child: ClipRRect(
                                           borderRadius:
                                               BorderRadius.circular(13),
-                                          child: Container(
-                                            color: Colors.grey.shade400,
-                                            child: Center(
-                                              child: Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  Icon(
-                                                    Icons.photo,
-                                                    size: 40,
-                                                    color: Colors.white,
-                                                  ),
-                                                  SizedBox(height: 5),
-                                                  Text(
-                                                    '사진 ${index + 1}',
-                                                    style: TextStyle(
-                                                      color: Colors.white,
-                                                      fontSize: 12,
+                                          child: FutureBuilder<Uint8List>(
+                                            future: photo.readAsBytes(),
+                                            builder: (context, snapshot) {
+                                              if (snapshot.hasData) {
+                                                return Image.memory(
+                                                  snapshot.data!,
+                                                  fit: BoxFit.cover,
+                                                  width: double.infinity,
+                                                  height: double.infinity,
+                                                );
+                                              } else if (snapshot.hasError) {
+                                                return Container(
+                                                  color: Colors.red.shade200,
+                                                  child: Center(
+                                                    child: Column(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        Icon(
+                                                          Icons.error,
+                                                          size: 30,
+                                                          color: Colors.red,
+                                                        ),
+                                                        SizedBox(height: 5),
+                                                        Text(
+                                                          '로딩 실패',
+                                                          style: TextStyle(
+                                                            color: Colors.red,
+                                                            fontSize: 10,
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
                                                   ),
-                                                ],
-                                              ),
-                                            ),
+                                                );
+                                              } else {
+                                                return Container(
+                                                  color: Colors.grey.shade400,
+                                                  child: Center(
+                                                    child: Column(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        CircularProgressIndicator(
+                                                          strokeWidth: 2,
+                                                          valueColor:
+                                                              AlwaysStoppedAnimation<
+                                                                      Color>(
+                                                                  Colors.white),
+                                                        ),
+                                                        SizedBox(height: 5),
+                                                        Text(
+                                                          '로딩 중...',
+                                                          style: TextStyle(
+                                                            color: Colors.white,
+                                                            fontSize: 10,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                );
+                                              }
+                                            },
                                           ),
                                         ),
                                       ),
@@ -237,6 +288,11 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen> {
                   CommonWidgets.buildNavigationButtons(
                     onNext: _selectedPhotos.length == requiredPhotoCount
                         ? () {
+                            print('다음 단계로 이동');
+                            print('선택된 사진들:');
+                            for (int i = 0; i < _selectedPhotos.length; i++) {
+                              print('  ${i + 1}. ${_selectedPhotos[i].name}');
+                            }
                             widget.onPhotosSelected(_selectedPhotos);
                             widget.onNext();
                           }
@@ -267,13 +323,17 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen> {
     setState(() {
       if (_selectedPhotos.contains(photo)) {
         _selectedPhotos.remove(photo);
+        print('사진 선택 해제: ${photo.name}');
       } else if (_selectedPhotos.length < requiredCount) {
         _selectedPhotos.add(photo);
+        print('사진 선택: ${photo.name}');
       } else {
         // 최대 개수에 도달했을 때는 첫 번째 사진을 제거하고 새로운 사진을 추가
-        _selectedPhotos.removeAt(0);
+        XFile removedPhoto = _selectedPhotos.removeAt(0);
         _selectedPhotos.add(photo);
+        print('사진 교체: ${removedPhoto.name} -> ${photo.name}');
       }
+      print('현재 선택된 사진 수: ${_selectedPhotos.length}/$requiredCount');
     });
   }
 }

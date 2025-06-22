@@ -156,7 +156,11 @@ class CameraService {
       } else {
         timer.cancel();
         _isCapturing = false;
-        print('8장 촬영 완료!');
+        print('8장 촬영 완료! 저장된 사진들:');
+        for (int i = 0; i < _capturedPhotos.length; i++) {
+          print('  ${i + 1}. ${_capturedPhotos[i].name}');
+        }
+        print('사진 선택 화면으로 이동합니다...');
         onCaptureComplete();
       }
     });
@@ -165,6 +169,8 @@ class CameraService {
   Future<void> _capturePhoto() async {
     if (kIsWeb && _canvasContext != null && _videoElement != null) {
       try {
+        print('사진 촬영 시작...');
+
         // 비디오를 캔버스에 그리기
         _canvasContext!.drawImage(_videoElement!, 0, 0);
 
@@ -176,16 +182,21 @@ class CameraService {
         Uint8List bytes = base64Decode(base64String);
 
         // XFile 생성
+        String fileName = 'photo_${DateTime.now().millisecondsSinceEpoch}.jpg';
         XFile photo = XFile.fromData(
           bytes,
-          name: 'photo_${DateTime.now().millisecondsSinceEpoch}.jpg',
+          name: fileName,
           mimeType: 'image/jpeg',
         );
 
         _capturedPhotos.add(photo);
+        print('사진 촬영 완료: $fileName (크기: ${bytes.length} bytes)');
+        print('현재 저장된 사진 수: ${_capturedPhotos.length}');
       } catch (e) {
         print('사진 촬영 실패: $e');
       }
+    } else {
+      print('사진 촬영 실패: 카메라 또는 캔버스가 초기화되지 않음');
     }
   }
 

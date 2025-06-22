@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'dart:typed_data';
-import 'package:image/image.dart' as img;
+import 'package:image_picker/image_picker.dart';
 import '../widgets/common_widgets.dart';
 
 class FilterSelectionScreen extends StatefulWidget {
   final String? selectedFilter;
+  final String? selectedFrame;
+  final List<XFile> selectedPhotos;
   final Function(String) onFilterSelected;
-  final Uint8List? filteredImage;
-  final Function(String) onApplyFilter;
   final VoidCallback onNext;
   final VoidCallback onBack;
   final String currentStep;
@@ -15,9 +15,9 @@ class FilterSelectionScreen extends StatefulWidget {
   const FilterSelectionScreen({
     Key? key,
     required this.selectedFilter,
+    required this.selectedFrame,
+    required this.selectedPhotos,
     required this.onFilterSelected,
-    required this.filteredImage,
-    required this.onApplyFilter,
     required this.onNext,
     required this.onBack,
     required this.currentStep,
@@ -36,137 +36,308 @@ class _FilterSelectionScreenState extends State<FilterSelectionScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    print('FilterSelectionScreen 초기화');
+    print('선택된 프레임: ${widget.selectedFrame}');
+    print('선택된 사진 수: ${widget.selectedPhotos.length}');
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.all(20),
-      child: Column(
-        children: [
-          CommonWidgets.buildStepHeader('필터를 선택해주세요', widget.currentStep),
-          SizedBox(height: 30),
-          // 사진 미리보기
-          Container(
-            width: 250,
-            height: 300,
+    return Scaffold(
+      backgroundColor: Colors.grey.shade50,
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isWideScreen = constraints.maxWidth > 600;
+            final previewSize = isWideScreen ? 300.0 : 250.0;
+
+            return Padding(
+              padding: EdgeInsets.all(isWideScreen ? 30 : 20),
+              child: Column(
+                children: [
+                  CommonWidgets.buildStepHeader(
+                      '필터를 선택해주세요', widget.currentStep),
+                  SizedBox(height: 30),
+
+                  // 프레임 미리보기 섹션
+                  Container(
+                    width: previewSize,
+                    height: previewSize * 1.2,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(15),
+                      border: Border.all(color: Colors.pink.shade300, width: 2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 10,
+                          offset: Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(13),
+                      child: _buildFramePreview(previewSize),
+                    ),
+                  ),
+
+                  SizedBox(height: 30),
+
+                  // 필터 선택 섹션
+                  Text(
+                    '적용할 필터를 선택하세요',
+                    style: TextStyle(
+                      fontSize: isWideScreen ? 18 : 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+
+                  SizedBox(height: 20),
+
+                  Container(
+                    height: 100,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: filters.length,
+                      itemBuilder: (context, index) {
+                        final filter = filters[index];
+                        final isSelected = widget.selectedFilter == filter;
+
+                        return Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 8),
+                          child: GestureDetector(
+                            onTap: () {
+                              widget.onFilterSelected(filter);
+                              print('필터 선택: $filter');
+                            },
+                            child: Container(
+                              width: 80,
+                              decoration: BoxDecoration(
+                                color: isSelected ? Colors.pink : Colors.white,
+                                borderRadius: BorderRadius.circular(15),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? Colors.pink
+                                      : Colors.grey.shade300,
+                                  width: isSelected ? 3 : 1,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 5,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    _getFilterIcon(filter),
+                                    color: isSelected
+                                        ? Colors.white
+                                        : Colors.grey.shade600,
+                                    size: 30,
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    filter,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: isSelected
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                      color: isSelected
+                                          ? Colors.white
+                                          : Colors.grey.shade700,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+                  Spacer(),
+
+                  CommonWidgets.buildNavigationButtons(
+                    onNext:
+                        widget.selectedFilter != null ? widget.onNext : null,
+                    onBack: widget.onBack,
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFramePreview(double size) {
+    if (widget.selectedPhotos.isEmpty) {
+      return Container(
+        color: Colors.grey.shade200,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.photo_library_outlined,
+                size: 60,
+                color: Colors.grey.shade400,
+              ),
+              SizedBox(height: 10),
+              Text(
+                '선택된 사진이 없습니다',
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 16,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // 프레임 타입에 따른 레이아웃
+    if (widget.selectedFrame == '4컷') {
+      return _build4CutLayout(size);
+    } else if (widget.selectedFrame == '6컷') {
+      return _build6CutLayout(size);
+    } else {
+      return _buildDefaultLayout(size);
+    }
+  }
+
+  Widget _build4CutLayout(double size) {
+    return Column(
+      children: List.generate(4, (index) {
+        return Expanded(
+          child: Container(
+            margin: EdgeInsets.all(2),
+            child: _buildPhotoContainer(index),
+          ),
+        );
+      }),
+    );
+  }
+
+  Widget _build6CutLayout(double size) {
+    return Column(
+      children: [
+        Expanded(
+          child: Row(
+            children: List.generate(3, (index) {
+              return Expanded(
+                child: Container(
+                  margin: EdgeInsets.all(1),
+                  child: _buildPhotoContainer(index),
+                ),
+              );
+            }),
+          ),
+        ),
+        Expanded(
+          child: Row(
+            children: List.generate(3, (index) {
+              return Expanded(
+                child: Container(
+                  margin: EdgeInsets.all(1),
+                  child: _buildPhotoContainer(index + 3),
+                ),
+              );
+            }),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDefaultLayout(double size) {
+    return _buildPhotoContainer(0);
+  }
+
+  Widget _buildPhotoContainer(int index) {
+    if (index >= widget.selectedPhotos.length) {
+      return Container(
+        color: Colors.grey.shade300,
+        child: Center(
+          child: Icon(
+            Icons.add_photo_alternate,
+            color: Colors.grey.shade500,
+            size: 30,
+          ),
+        ),
+      );
+    }
+
+    return FutureBuilder<Uint8List>(
+      future: widget.selectedPhotos[index].readAsBytes(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          return Container(
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(15),
-              border: Border.all(color: Colors.pink.shade300, width: 2),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 10,
-                  offset: Offset(0, 5),
+                  color: _getFilterOverlay(),
+                  blurRadius: 0,
                 ),
               ],
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(13),
-              child: widget.filteredImage != null
-                  ? Image.memory(
-                      widget.filteredImage!,
-                      fit: BoxFit.cover,
-                    )
-                  : Container(
-                      color: Colors.grey.shade200,
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.image,
-                              color: Colors.grey.shade600,
-                              size: 60,
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              '필터 미리보기',
-                              style: TextStyle(
-                                color: Colors.grey.shade600,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+            child: Image.memory(
+              snapshot.data!,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
             ),
-          ),
-          SizedBox(height: 30),
-          // 필터 선택 버튼들
-          Container(
-            height: 100,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: filters.length,
-              itemBuilder: (context, index) {
-                final filter = filters[index];
-                final isSelected = widget.selectedFilter == filter;
-
-                return Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8),
-                  child: GestureDetector(
-                    onTap: () {
-                      widget.onFilterSelected(filter);
-                      widget.onApplyFilter(filter);
-                    },
-                    child: Container(
-                      width: 80,
-                      decoration: BoxDecoration(
-                        color: isSelected ? Colors.pink : Colors.white,
-                        borderRadius: BorderRadius.circular(15),
-                        border: Border.all(
-                          color:
-                              isSelected ? Colors.pink : Colors.grey.shade300,
-                          width: isSelected ? 3 : 1,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 5,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            _getFilterIcon(filter),
-                            color: isSelected
-                                ? Colors.white
-                                : Colors.grey.shade600,
-                            size: 30,
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            filter,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: isSelected
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                              color: isSelected
-                                  ? Colors.white
-                                  : Colors.grey.shade700,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
+          );
+        } else if (snapshot.hasError) {
+          return Container(
+            color: Colors.red.shade200,
+            child: Center(
+              child: Icon(
+                Icons.error,
+                color: Colors.red,
+                size: 24,
+              ),
             ),
-          ),
-          Spacer(),
-          CommonWidgets.buildNavigationButtons(
-            onNext: widget.onNext,
-            onBack: widget.onBack,
-          ),
-        ],
-      ),
+          );
+        } else {
+          return Container(
+            color: Colors.grey.shade300,
+            child: Center(
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.pink),
+              ),
+            ),
+          );
+        }
+      },
     );
+  }
+
+  Color _getFilterOverlay() {
+    switch (widget.selectedFilter) {
+      case 'Sepia':
+        return Colors.brown.withOpacity(0.3);
+      case 'Black & White':
+        return Colors.grey.withOpacity(0.5);
+      case 'Vintage':
+        return Colors.orange.withOpacity(0.2);
+      default:
+        return Colors.transparent;
+    }
   }
 
   IconData _getFilterIcon(String filter) {

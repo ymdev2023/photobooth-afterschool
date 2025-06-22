@@ -184,6 +184,7 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
           cameraService: cameraService,
           onNext: _nextStep,
           onBack: _previousStep,
+          currentStep: _getCurrentStepText(),
         );
       case PhotoBoothStep.photoSelection:
         return PhotoSelectionScreen(
@@ -198,14 +199,9 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
       case PhotoBoothStep.filterSelection:
         return FilterSelectionScreen(
           selectedFilter: selectedFilter,
+          selectedFrame: selectedFrame,
+          selectedPhotos: selectedPhotos,
           onFilterSelected: _updateFilter,
-          filteredImage: filteredImage,
-          onApplyFilter: (filter) {
-            setState(() {
-              selectedFilter = filter;
-              // filteredImage는 FilterSelectionScreen 내부에서 처리
-            });
-          },
           onNext: _nextStep,
           onBack: _previousStep,
           currentStep: _getCurrentStepText(),

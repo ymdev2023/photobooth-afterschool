@@ -92,7 +92,7 @@ class WelcomeScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'v1.0.0 (2025.01.22)',
+                            'v1.0.2 (2025.06.22)',
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -110,7 +110,7 @@ class WelcomeScreen extends StatelessWidget {
                           ),
                           SizedBox(height: 4),
                           Text(
-                            '• 8단계 진행 시스템으로 개선\n• 카메라 촬영 시 플래시 효과 추가\n• 10초 간격 자동 촬영 (총 8장)\n• 모든 화면 반응형 디자인 적용',
+                            '• 촬영 중 오버레이 최소화로 라이브 뷰 개선\n• 실제 촬영 이미지 표시 및 선택 기능 추가\n• 선택된 사진으로 프레임 미리보기 구현\n• 상세한 로깅 시스템 추가',
                             style: TextStyle(
                               color: Colors.white60,
                               fontSize: isWideScreen ? 13 : 11,
