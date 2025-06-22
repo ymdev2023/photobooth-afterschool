@@ -1,0 +1,30 @@
+name: photo_booth_app
+description: A Flutter application for a photo booth experience with photo editing and QR code download features.
+
+publish_to: "none"
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.12.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  image_picker: ^1.1.2
+  qr_flutter: ^4.1.0
+  provider: ^6.1.2
+  path_provider: ^2.1.4
+  image: ^3.3.0
+  camera: ^0.10.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+
+  # assets:
+  #   - assets/images/
+  #   - assets/frames/
