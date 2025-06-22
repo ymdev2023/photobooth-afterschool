@@ -9,6 +9,7 @@ import 'dart:async';
 import 'package:camera/camera.dart';
 import 'dart:html' as html;
 import 'dart:convert';
+import 'dart:ui_web' as ui_web;
 
 void main() {
   runApp(PhotoBoothApp());
@@ -63,6 +64,7 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
   bool _isWebCameraInitialized = false;
   html.CanvasElement? _canvasElement;
   html.CanvasRenderingContext2D? _canvasContext;
+  String _videoElementId = 'video-element-${DateTime.now().millisecondsSinceEpoch}';
 
   List<Map<String, dynamic>> _frames = [
     {
@@ -164,12 +166,19 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
       
       // 비디오 엘리먼트 생성 및 설정
       _videoElement = html.VideoElement()
+        ..id = _videoElementId
         ..srcObject = _mediaStream
         ..autoplay = true
         ..muted = true
         ..style.width = '100%'
         ..style.height = '100%'
         ..style.objectFit = 'cover';
+
+      // 플랫폼 뷰에 비디오 엘리먼트 등록
+      ui_web.platformViewRegistry.registerViewFactory(
+        _videoElementId,
+        (int viewId) => _videoElement!,
+      );
 
       // 캔버스 엘리먼트 생성 (사진 캡처용)
       _canvasElement = html.CanvasElement(width: 640, height: 480);
@@ -1084,13 +1093,12 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
                         ],
                       ),
                     ] else if (kIsWeb && _isWebCameraInitialized) ...[
-                      // 웹 카메라 미리보기 (현재는 설명 텍스트로 대체)
+                      // 웹 카메라 미리보기
                       Container(
                         width: 350,
                         height: 300,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20),
-                          color: Colors.black87,
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black26,
@@ -1099,31 +1107,10 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
                             ),
                           ],
                         ),
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.videocam,
-                                size: 80,
-                                color: Colors.white70,
-                              ),
-                              SizedBox(height: 20),
-                              Text(
-                                '카메라가 준비되었습니다',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 18,
-                                ),
-                              ),
-                              Text(
-                                '촬영 버튼을 눌러주세요',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: HtmlElementView(
+                            viewType: _videoElementId,
                           ),
                         ),
                       ),
