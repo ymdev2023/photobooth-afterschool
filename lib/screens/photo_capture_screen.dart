@@ -119,7 +119,9 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
                         ),
                       ),
                     // 촬영 상태 표시
-                    if (widget.cameraService.isCapturing && _countdown == 0 && !_isCaptureFlash)
+                    if (widget.cameraService.isCapturing &&
+                        _countdown == 0 &&
+                        !_isCaptureFlash)
                       Container(
                         width: double.infinity,
                         height: double.infinity,
@@ -218,7 +220,7 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
         setState(() {
           _isCaptureFlash = true;
         });
-        
+
         // 1초 후 플래시 효과 제거
         Timer(Duration(seconds: 1), () {
           if (mounted) {
@@ -374,7 +376,7 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              '2 / 7',
+              '2 / 8',
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,

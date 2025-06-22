@@ -9,6 +9,7 @@ class PhotoSelectionScreen extends StatefulWidget {
   final Function(List<XFile>) onPhotosSelected;
   final VoidCallback onNext;
   final VoidCallback onBack;
+  final String currentStep;
 
   const PhotoSelectionScreen({
     Key? key,
@@ -18,6 +19,7 @@ class PhotoSelectionScreen extends StatefulWidget {
     required this.onPhotosSelected,
     required this.onNext,
     required this.onBack,
+    required this.currentStep,
   }) : super(key: key);
 
   @override
@@ -51,7 +53,8 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen> {
               padding: EdgeInsets.all(padding),
               child: Column(
                 children: [
-                  CommonWidgets.buildStepHeader('사진을 선택해주세요', '3 / 7'),
+                  CommonWidgets.buildStepHeader(
+                      '사진을 선택해주세요', widget.currentStep),
                   SizedBox(height: 20),
                   // 선택 현황 표시
                   Container(

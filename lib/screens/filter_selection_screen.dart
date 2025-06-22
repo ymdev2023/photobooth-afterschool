@@ -10,6 +10,7 @@ class FilterSelectionScreen extends StatefulWidget {
   final Function(String) onApplyFilter;
   final VoidCallback onNext;
   final VoidCallback onBack;
+  final String currentStep;
 
   const FilterSelectionScreen({
     Key? key,
@@ -19,6 +20,7 @@ class FilterSelectionScreen extends StatefulWidget {
     required this.onApplyFilter,
     required this.onNext,
     required this.onBack,
+    required this.currentStep,
   }) : super(key: key);
 
   @override
@@ -39,7 +41,7 @@ class _FilterSelectionScreenState extends State<FilterSelectionScreen> {
       padding: EdgeInsets.all(20),
       child: Column(
         children: [
-          CommonWidgets.buildStepHeader('필터를 선택해주세요', '4 / 7'),
+          CommonWidgets.buildStepHeader('필터를 선택해주세요', widget.currentStep),
           SizedBox(height: 30),
           // 사진 미리보기
           Container(

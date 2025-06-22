@@ -143,6 +143,27 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
     });
   }
 
+  String _getCurrentStepText() {
+    switch (currentStep) {
+      case PhotoBoothStep.welcome:
+        return '시작';
+      case PhotoBoothStep.frameSelection:
+        return '1 / 8';
+      case PhotoBoothStep.photoCapture:
+        return '2 / 8';
+      case PhotoBoothStep.photoSelection:
+        return '3 / 8';
+      case PhotoBoothStep.filterSelection:
+        return '4 / 8';
+      case PhotoBoothStep.review:
+        return '5 / 8';
+      case PhotoBoothStep.download:
+        return '6 / 8';
+      default:
+        return '';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     switch (currentStep) {
@@ -156,6 +177,7 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
           onFrameSelected: _updateFrame,
           onNext: selectedFrame != null ? _nextStep : null,
           onBack: _previousStep,
+          currentStep: _getCurrentStepText(),
         );
       case PhotoBoothStep.photoCapture:
         return PhotoCaptureScreen(
@@ -171,6 +193,7 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
           onPhotosSelected: _updateSelectedPhotos,
           onNext: _nextStep,
           onBack: _previousStep,
+          currentStep: _getCurrentStepText(),
         );
       case PhotoBoothStep.filterSelection:
         return FilterSelectionScreen(
@@ -185,17 +208,20 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
           },
           onNext: _nextStep,
           onBack: _previousStep,
+          currentStep: _getCurrentStepText(),
         );
       case PhotoBoothStep.review:
         return ReviewScreen(
           filteredImage: filteredImage,
           onNext: _nextStep,
           onBack: _previousStep,
+          currentStep: _getCurrentStepText(),
         );
       case PhotoBoothStep.download:
         return DownloadScreen(
           downloadUrl: downloadUrl,
           onRestart: _resetToWelcome,
+          currentStep: _getCurrentStepText(),
         );
       default:
         return WelcomeScreen(onStart: _nextStep);

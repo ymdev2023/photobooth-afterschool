@@ -6,6 +6,7 @@ class FrameSelectionScreen extends StatelessWidget {
   final Function(String) onFrameSelected;
   final VoidCallback? onNext;
   final VoidCallback onBack;
+  final String currentStep;
 
   const FrameSelectionScreen({
     Key? key,
@@ -13,6 +14,7 @@ class FrameSelectionScreen extends StatelessWidget {
     required this.onFrameSelected,
     required this.onNext,
     required this.onBack,
+    required this.currentStep,
   }) : super(key: key);
 
   @override
@@ -45,7 +47,7 @@ class FrameSelectionScreen extends StatelessWidget {
           padding: EdgeInsets.all(20),
           child: Column(
             children: [
-              CommonWidgets.buildStepHeader('프레임을 선택해주세요', '1 / 7'),
+              CommonWidgets.buildStepHeader('프레임을 선택해주세요', currentStep),
               SizedBox(height: 40),
               Expanded(
                 child: LayoutBuilder(

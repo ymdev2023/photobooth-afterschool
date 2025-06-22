@@ -5,11 +5,13 @@ import '../widgets/common_widgets.dart';
 class DownloadScreen extends StatelessWidget {
   final String? downloadUrl;
   final VoidCallback onRestart;
+  final String currentStep;
 
   const DownloadScreen({
     Key? key,
     required this.downloadUrl,
     required this.onRestart,
+    required this.currentStep,
   }) : super(key: key);
 
   @override
@@ -28,7 +30,7 @@ class DownloadScreen extends StatelessWidget {
               padding: EdgeInsets.all(isWideScreen ? 30 : 20),
               child: Column(
                 children: [
-                  CommonWidgets.buildStepHeader('다운로드', '6 / 7'),
+                  CommonWidgets.buildStepHeader('다운로드', currentStep),
                   Expanded(
                     child: Center(
                       child: Column(

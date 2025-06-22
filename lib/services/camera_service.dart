@@ -33,6 +33,7 @@ class CameraService {
   List<XFile> getCapturedPhotos() {
     return List.from(_capturedPhotos);
   }
+
   List<XFile> get capturedPhotos => _capturedPhotos;
   String get videoElementId => _videoElementId;
 
@@ -137,7 +138,8 @@ class CameraService {
     });
   }
 
-  void _startCapturingPhotos(VoidCallback onCaptureComplete, VoidCallback? onPhotoTaken) async {
+  void _startCapturingPhotos(
+      VoidCallback onCaptureComplete, VoidCallback? onPhotoTaken) async {
     // 첫 번째 사진을 바로 촬영
     await _capturePhoto();
     _captureCount++;

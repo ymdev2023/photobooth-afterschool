@@ -6,12 +6,14 @@ class ReviewScreen extends StatelessWidget {
   final Uint8List? filteredImage;
   final VoidCallback onNext;
   final VoidCallback onBack;
+  final String currentStep;
 
   const ReviewScreen({
     Key? key,
     required this.filteredImage,
     required this.onNext,
     required this.onBack,
+    required this.currentStep,
   }) : super(key: key);
 
   @override
@@ -23,16 +25,16 @@ class ReviewScreen extends StatelessWidget {
           builder: (context, constraints) {
             final isWideScreen = constraints.maxWidth > 600;
             final titleSize = isWideScreen ? 28.0 : 24.0;
-            final imageWidth = isWideScreen 
-                ? constraints.maxWidth * 0.4 
+            final imageWidth = isWideScreen
+                ? constraints.maxWidth * 0.4
                 : constraints.maxWidth * 0.8;
             final imageHeight = imageWidth * 1.33; // 4:3 비율
-            
+
             return Padding(
               padding: EdgeInsets.all(isWideScreen ? 30 : 20),
               child: Column(
                 children: [
-                  CommonWidgets.buildStepHeader('최종 확인', '5 / 7'),
+                  CommonWidgets.buildStepHeader('최종 확인', currentStep),
                   Expanded(
                     child: Center(
                       child: Column(
@@ -71,7 +73,8 @@ class ReviewScreen extends StatelessWidget {
                                       color: Colors.white,
                                       child: Center(
                                         child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
                                           children: [
                                             Icon(
                                               Icons.image,
@@ -103,9 +106,8 @@ class ReviewScreen extends StatelessWidget {
                                   backgroundColor: Colors.grey.shade200,
                                   foregroundColor: Colors.grey.shade700,
                                   padding: EdgeInsets.symmetric(
-                                    horizontal: isWideScreen ? 40 : 30, 
-                                    vertical: isWideScreen ? 18 : 15
-                                  ),
+                                      horizontal: isWideScreen ? 40 : 30,
+                                      vertical: isWideScreen ? 18 : 15),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(25),
                                   ),
@@ -124,9 +126,8 @@ class ReviewScreen extends StatelessWidget {
                                   backgroundColor: Colors.pink,
                                   foregroundColor: Colors.white,
                                   padding: EdgeInsets.symmetric(
-                                    horizontal: isWideScreen ? 40 : 30, 
-                                    vertical: isWideScreen ? 18 : 15
-                                  ),
+                                      horizontal: isWideScreen ? 40 : 30,
+                                      vertical: isWideScreen ? 18 : 15),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(25),
                                   ),
