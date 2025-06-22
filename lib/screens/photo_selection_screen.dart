@@ -255,8 +255,6 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen> {
         return 4;
       case 'grid_6cut':
         return 6;
-      case 'strip_frame':
-        return 3;
       default:
         return 4;
     }

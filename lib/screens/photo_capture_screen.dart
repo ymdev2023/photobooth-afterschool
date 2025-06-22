@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../widgets/common_widgets.dart';
 import '../services/camera_service.dart';
+import 'dart:html' as html;
+import 'dart:ui' as ui;
 
 class PhotoCaptureScreen extends StatefulWidget {
   final CameraService cameraService;
@@ -279,42 +281,47 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
       );
     }
 
-    // 카메라가 초기화된 경우 프리뷰 표시
+    // 카메라가 초기화된 경우 실제 비디오 스트림 표시
     return ClipRRect(
       borderRadius: BorderRadius.circular(18),
       child: Container(
         width: double.infinity,
         height: double.infinity,
-        color: Colors.grey.shade700,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.videocam,
-                size: 80,
-                color: Colors.white70,
-              ),
-              SizedBox(height: 20),
-              Text(
-                '카메라가 준비되었습니다',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 16,
-                ),
-              ),
-              SizedBox(height: 10),
-              Text(
-                '촬영 시작 버튼을 눌러주세요',
-                style: TextStyle(
-                  color: Colors.white54,
-                  fontSize: 14,
-                ),
-              ),
-            ],
-          ),
-        ),
+        child: _buildVideoView(),
       ),
     );
+  }
+
+  Widget _buildVideoView() {
+    if (widget.cameraService.mediaStream == null) {
+      return Container(
+        color: Colors.grey.shade800,
+        child: Center(
+          child: Text(
+            '카메라 스트림을 불러오는 중...',
+            style: TextStyle(color: Colors.white70),
+          ),
+        ),
+      );
+    }
+
+    // 웹에서는 HTML video 요소 사용
+    final viewId = 'video-${DateTime.now().millisecondsSinceEpoch}';
+    final videoElement = html.VideoElement()
+      ..srcObject = widget.cameraService.mediaStream
+      ..autoplay = true
+      ..muted = true
+      ..style.width = '100%'
+      ..style.height = '100%'
+      ..style.objectFit = 'cover'
+      ..style.transform = 'scaleX(-1)'; // 미러 효과
+
+    // ignore: undefined_prefixed_name
+    ui.platformViewRegistry.registerViewFactory(
+      viewId,
+      (int viewId) => videoElement,
+    );
+
+    return HtmlElementView(viewType: viewId);
   }
 }

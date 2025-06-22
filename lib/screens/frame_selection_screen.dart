@@ -36,15 +36,6 @@ class FrameSelectionScreen extends StatelessWidget {
         'color': Colors.pink.shade50,
         'borderColor': Colors.pink.shade200,
       },
-      {
-        'name': '스트립 프레임',
-        'description': '긴 스트립 형태',
-        'path': 'strip_frame',
-        'cuts': 3,
-        'layout': 'horizontal',
-        'color': Colors.blue.shade50,
-        'borderColor': Colors.blue.shade200,
-      },
     ];
 
     return Scaffold(

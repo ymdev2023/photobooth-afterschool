@@ -28,6 +28,7 @@ class CameraService {
   bool get isCapturing => _isCapturing;
   int get captureCount => _captureCount;
   int get captureCountdown => _captureCountdown;
+  html.MediaStream? get mediaStream => _mediaStream;
   List<XFile> get capturedPhotos => _capturedPhotos;
   String get videoElementId => _videoElementId;
 
@@ -136,8 +137,8 @@ class CameraService {
     _captureCount++;
     print('촬영 완료: ${_captureCount}/8');
 
-    // 나머지 사진들을 3초 간격으로 촬영
-    _captureTimer = Timer.periodic(Duration(seconds: 3), (timer) async {
+    // 나머지 사진들을 10초 간격으로 촬영
+    _captureTimer = Timer.periodic(Duration(seconds: 10), (timer) async {
       if (_captureCount < 8) {
         await _capturePhoto();
         _captureCount++;
