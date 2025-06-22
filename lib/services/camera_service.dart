@@ -29,13 +29,17 @@ class CameraService {
   int get captureCount => _captureCount;
   int get captureCountdown => _captureCountdown;
   List<XFile> get capturedPhotos => _capturedPhotos;
+  String get videoElementId => _videoElementId;
 
   Future<void> setupWebCamera() async {
     try {
+      // iOS Safari 호환성을 위한 설정
       _videoElement = html.VideoElement()
         ..width = 640
         ..height = 480
         ..autoplay = true
+        ..setAttribute('playsinline', 'true') // iOS Safari에서 필수
+        ..setAttribute('webkit-playsinline', 'true') // 구형 iOS 지원
         ..id = _videoElementId;
 
       // 비디오 요소를 DOM에 추가
@@ -46,19 +50,48 @@ class CameraService {
       _canvasContext =
           _canvasElement!.getContext('2d') as html.CanvasRenderingContext2D;
 
-      // 카메라 스트림 요청
-      _mediaStream = await html.window.navigator.mediaDevices?.getUserMedia({
-        'video': {'width': 640, 'height': 480},
+      // iOS Safari 호환 카메라 스트림 요청
+      final mediaDevices = html.window.navigator.mediaDevices;
+      if (mediaDevices == null) {
+        throw Exception('MediaDevices API를 지원하지 않는 브라우저입니다.');
+      }
+
+      // iOS Safari를 위한 더 구체적인 constraints
+      final constraints = {
+        'video': {
+          'width': {'ideal': 640, 'max': 1280},
+          'height': {'ideal': 480, 'max': 720},
+          'facingMode': 'user', // 전면 카메라 우선
+          'frameRate': {'ideal': 30, 'max': 30}
+        },
         'audio': false,
-      });
+      };
+
+      _mediaStream = await mediaDevices.getUserMedia(constraints);
 
       if (_mediaStream != null) {
         _videoElement!.srcObject = _mediaStream;
+
+        // iOS Safari에서 비디오 로딩을 기다림
+        await _videoElement!.onLoadedMetadata.first;
+        await _videoElement!.play();
+
         _isWebCameraInitialized = true;
-        print('웹 카메라 초기화 성공');
+        print('웹 카메라 초기화 성공 (iOS 호환)');
+      } else {
+        throw Exception('카메라 스트림을 가져올 수 없습니다.');
       }
     } catch (e) {
       print('웹 카메라 초기화 실패: $e');
+      // iOS에서 권한 거부 또는 카메라 없음 처리
+      if (e.toString().contains('NotAllowedError')) {
+        print('카메라 권한이 거부되었습니다. 브라우저 설정에서 카메라 권한을 허용해주세요.');
+      } else if (e.toString().contains('NotFoundError')) {
+        print('카메라를 찾을 수 없습니다.');
+      } else if (e.toString().contains('NotSupportedError')) {
+        print('이 브라우저에서는 카메라를 지원하지 않습니다.');
+      }
+      _isWebCameraInitialized = false;
     }
   }
 

@@ -20,6 +20,38 @@ class PhotoCaptureScreen extends StatefulWidget {
 
 class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
   int _countdown = 0;
+  bool _isInitializing = false;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeCamera();
+  }
+
+  Future<void> _initializeCamera() async {
+    setState(() {
+      _isInitializing = true;
+      _errorMessage = null;
+    });
+
+    try {
+      await widget.cameraService.setupWebCamera();
+      if (!widget.cameraService.isWebCameraInitialized) {
+        setState(() {
+          _errorMessage = '카메라를 초기화할 수 없습니다. 브라우저에서 카메라 권한을 허용해주세요.';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = '카메라 오류: ${e.toString()}';
+      });
+    } finally {
+      setState(() {
+        _isInitializing = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,39 +81,7 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
                           color: Colors.grey.shade800,
                           borderRadius: BorderRadius.circular(18),
                         ),
-                        child: true // widget.cameraService.isInitialized
-                            ? ClipRRect(
-                                borderRadius: BorderRadius.circular(18),
-                                child: Container(
-                                  color: Colors.grey.shade700,
-                                  child: Center(
-                                    child: Text(
-                                      '카메라 프리뷰',
-                                      style: TextStyle(color: Colors.white70),
-                                    ),
-                                  ),
-                                ), // widget.cameraService.buildCameraPreview(),
-                              )
-                            : Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.camera_alt,
-                                      size: 80,
-                                      color: Colors.white54,
-                                    ),
-                                    SizedBox(height: 20),
-                                    Text(
-                                      '카메라를 초기화하는 중...',
-                                      style: TextStyle(
-                                        color: Colors.white70,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                        child: _buildCameraContent(),
                       ),
                     ),
                     // 카운트다운 오버레이
@@ -118,7 +118,8 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.pink),
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.pink),
                               ),
                               SizedBox(height: 20),
                               Text(
@@ -149,7 +150,8 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.pink,
                       foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
                       ),
@@ -162,7 +164,8 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
                         SizedBox(width: 8),
                         Text(
                           '촬영 시작',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
@@ -195,6 +198,123 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
         });
         widget.onNext();
       },
+    );
+  }
+
+  Widget _buildCameraContent() {
+    if (_isInitializing) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.pink),
+            ),
+            SizedBox(height: 20),
+            Text(
+              '카메라를 초기화하는 중...',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_errorMessage != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.camera_alt_outlined,
+              size: 80,
+              color: Colors.red.shade300,
+            ),
+            SizedBox(height: 20),
+            Text(
+              _errorMessage!,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.red.shade300,
+                fontSize: 16,
+              ),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _initializeCamera,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.pink,
+                foregroundColor: Colors.white,
+              ),
+              child: Text('다시 시도'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (!widget.cameraService.isWebCameraInitialized) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.camera_alt,
+              size: 80,
+              color: Colors.white54,
+            ),
+            SizedBox(height: 20),
+            Text(
+              '카메라 준비 중...',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // 카메라가 초기화된 경우 프리뷰 표시
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        width: double.infinity,
+        height: double.infinity,
+        color: Colors.grey.shade700,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.videocam,
+                size: 80,
+                color: Colors.white70,
+              ),
+              SizedBox(height: 20),
+              Text(
+                '카메라가 준비되었습니다',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 16,
+                ),
+              ),
+              SizedBox(height: 10),
+              Text(
+                '촬영 시작 버튼을 눌러주세요',
+                style: TextStyle(
+                  color: Colors.white54,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
