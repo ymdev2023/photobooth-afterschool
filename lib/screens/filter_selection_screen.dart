@@ -193,7 +193,7 @@ class _FilterSelectionScreenState extends State<FilterSelectionScreen> {
     print('_buildFramePreview 호출됨');
     print('선택된 사진 수: ${widget.selectedPhotos.length}');
     print('선택된 프레임: ${widget.selectedFrame}');
-    
+
     if (widget.selectedPhotos.isEmpty) {
       return Container(
         color: Colors.grey.shade200,
@@ -281,7 +281,7 @@ class _FilterSelectionScreenState extends State<FilterSelectionScreen> {
   Widget _buildDefaultLayout(double size) {
     // 선택된 사진 수에 따라 동적으로 레이아웃 결정
     int photoCount = widget.selectedPhotos.length;
-    
+
     if (photoCount == 1) {
       return _buildPhotoContainer(0);
     } else if (photoCount <= 4) {
@@ -295,7 +295,7 @@ class _FilterSelectionScreenState extends State<FilterSelectionScreen> {
                 return Expanded(
                   child: Container(
                     margin: EdgeInsets.all(1),
-                    child: index < photoCount 
+                    child: index < photoCount
                         ? _buildPhotoContainer(index)
                         : Container(color: Colors.grey.shade300),
                   ),
@@ -312,8 +312,9 @@ class _FilterSelectionScreenState extends State<FilterSelectionScreen> {
   }
 
   Widget _buildPhotoContainer(int index) {
-    print('_buildPhotoContainer 호출됨 - index: $index, 전체 사진 수: ${widget.selectedPhotos.length}');
-    
+    print(
+        '_buildPhotoContainer 호출됨 - index: $index, 전체 사진 수: ${widget.selectedPhotos.length}');
+
     if (index >= widget.selectedPhotos.length) {
       return Container(
         color: Colors.grey.shade300,

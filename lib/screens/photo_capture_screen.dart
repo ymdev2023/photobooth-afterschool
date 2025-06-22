@@ -144,54 +144,6 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
                           borderRadius: BorderRadius.circular(18),
                         ),
                       ),
-                    // 원형 타이머 - 오른쪽 상단
-                    if (widget.cameraService.isCapturing &&
-                        _countdown == 0 &&
-                        !_isCaptureFlash &&
-                        _intervalCountdown > 0)
-                      Positioned(
-                        top: 20,
-                        right: 20,
-                        child: Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.7),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.3),
-                              width: 2,
-                            ),
-                          ),
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              // 원형 프로그레스 인디케이터
-                              SizedBox(
-                                width: 60,
-                                height: 60,
-                                child: CircularProgressIndicator(
-                                  value: (_intervalCountdown) / 10.0,
-                                  strokeWidth: 4,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.pink),
-                                  backgroundColor:
-                                      Colors.white.withOpacity(0.3),
-                                ),
-                              ),
-                              // 남은 시간 텍스트
-                              Text(
-                                _intervalCountdown.toString(),
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
                     // 촬영 결과 미리보기 오버레이 - 전체 화면 크기
                     if (_showPreview && _previewPhoto != null)
                       Container(
@@ -208,7 +160,8 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
                               if (snapshot.hasData) {
                                 return Transform(
                                   alignment: Alignment.center,
-                                  transform: Matrix4.identity()..scale(-1.0, 1.0), // 좌우반전
+                                  transform: Matrix4.identity()
+                                    ..scale(-1.0, 1.0), // 좌우반전
                                   child: Image.memory(
                                     snapshot.data!,
                                     fit: BoxFit.cover,
@@ -353,7 +306,7 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
           _previewPhoto = null;
           _isProcessing = true;
         });
-        
+
         // 3초 후 다음 화면으로 이동 (로딩 시간 시뮬레이션)
         Timer(Duration(seconds: 3), () {
           if (mounted) {
@@ -534,21 +487,62 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
               color: Colors.white,
             ),
           ),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              widget.currentStep,
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
+          // 헤더의 원형 카운트다운 인디케이터
+          if (widget.cameraService.isCapturing && _intervalCountdown > 0)
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.7),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.3),
+                  width: 2,
+                ),
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // 원형 프로그레스 인디케이터
+                  SizedBox(
+                    width: 45,
+                    height: 45,
+                    child: CircularProgressIndicator(
+                      value: (_intervalCountdown) / 10.0,
+                      strokeWidth: 3,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.pink),
+                      backgroundColor: Colors.white.withOpacity(0.3),
+                    ),
+                  ),
+                  // 남은 시간 텍스트
+                  Text(
+                    _intervalCountdown.toString(),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            // 일반 step indicator (촬영 중이 아닐 때)
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                widget.currentStep,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
               ),
             ),
-          ),
         ],
       ),
     );

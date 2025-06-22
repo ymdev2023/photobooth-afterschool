@@ -153,7 +153,7 @@ class WelcomeScreen extends StatelessWidget {
                           ),
                           SizedBox(height: 4),
                           Text(
-                            '• 촬영 후 1초간 결과물 미리보기 표시\n• 원형 타이머로 촬영 간격 시각화\n• 필터 적용 기능 개선 (Sepia, B&W, Vintage)\n• 4컷/6컷 프레임에 사진 정확히 배치',
+                            '• 헤더에 원형 카운트다운 타이머 통합\n• 촬영 후 1초간 결과물 미리보기 표시\n• 깜박임 없는 부드러운 UI 개선\n• 필터 적용 기능 개선 (Sepia, B&W, Vintage)\n• 4컷/6컷 프레임에 사진 정확히 배치',
                             style: TextStyle(
                               color: Colors.white60,
                               fontSize: isWideScreen ? 13 : 11,
