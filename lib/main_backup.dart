@@ -160,10 +160,9 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
       // HTML5 getUserMedia API를 사용하여 카메라 스트림 가져오기
       final mediaStream = await html.window.navigator.mediaDevices!.getUserMedia({
         'video': {
-          'facingMode': 'user',
-          'width': {'ideal': 1280, 'min': 640, 'max': 1920},
-          'height': {'ideal': 720, 'min': 480, 'max': 1080},
-          'aspectRatio': 16/9,
+          'facingMode': 'user', 
+          'width': {'ideal': 640}, 
+          'height': {'ideal': 480}
         },
         'audio': false,
       });
@@ -179,19 +178,14 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
         ..style.width = '100%'
         ..style.height = '100%'
         ..style.objectFit = 'cover'
-        ..style.backgroundColor = 'black'
-        ..style.transform = 'scaleX(-1)'; // 셀카 모드로 좌우 반전
-
-      // 모바일에서 전체 화면 방지를 위한 속성 설정
-      _videoElement!.setAttribute('playsinline', 'true');
-      _videoElement!.setAttribute('webkit-playsinline', 'true');
+        ..style.backgroundColor = 'black';
 
       // 스트림을 비디오 엘리먼트에 연결
       _videoElement!.srcObject = _mediaStream;
       
       // 비디오가 로드될 때까지 대기
       await _videoElement!.onLoadedMetadata.first;
-      print('비디오 메타데이터 로드 완료 - 해상도: ${_videoElement!.videoWidth}x${_videoElement!.videoHeight}');
+      print('비디오 메타데이터 로드 완료');
 
       // 플랫폼 뷰에 비디오 엘리먼트 등록
       ui_web.platformViewRegistry.registerViewFactory(
@@ -200,11 +194,8 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
       );
       print('플랫폼 뷰 등록 완료');
 
-      // 캔버스 엘리먼트 생성 (실제 비디오 해상도로)
-      _canvasElement = html.CanvasElement(
-        width: _videoElement!.videoWidth, 
-        height: _videoElement!.videoHeight
-      );
+      // 캔버스 엘리먼트 생성 (사진 캡처용)
+      _canvasElement = html.CanvasElement(width: 640, height: 480);
       _canvasContext = _canvasElement!.getContext('2d') as html.CanvasRenderingContext2D;
 
       setState(() {
@@ -252,24 +243,16 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
     }
 
     try {
-      // 비디오의 실제 크기 가져오기
-      final videoWidth = _videoElement!.videoWidth;
-      final videoHeight = _videoElement!.videoHeight;
-      
-      // 캔버스 크기를 비디오 비율에 맞게 조정
-      _canvasElement!.width = videoWidth;
-      _canvasElement!.height = videoHeight;
-      
       // 비디오에서 캔버스로 현재 프레임 그리기
       _canvasContext!.drawImageScaled(
         _videoElement!,
         0, 0,
-        videoWidth,
-        videoHeight,
+        _canvasElement!.width!,
+        _canvasElement!.height!,
       );
 
-      // 캔버스를 데이터 URL로 변환 (품질 개선)
-      final dataUrl = _canvasElement!.toDataUrl('image/jpeg', 0.92);
+      // 캔버스를 데이터 URL로 변환
+      final dataUrl = _canvasElement!.toDataUrl('image/jpeg', 0.95);
       
       // 데이터 URL에서 base64 데이터 추출
       final base64Data = dataUrl.split(',')[1];
@@ -370,45 +353,33 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
 
   Widget _buildPhotoPreview() {
     if (_filteredImage != null) {
-      return AspectRatio(
-        aspectRatio: 3/4, // 일반적인 사진 비율
-        child: Image.memory(
-          Uint8List.fromList(img.encodeJpg(_filteredImage!)),
-          fit: BoxFit.cover,
-        ),
+      return Image.memory(
+        Uint8List.fromList(img.encodeJpg(_filteredImage!)),
+        fit: BoxFit.contain, // cover에서 contain으로 변경하여 비율 유지
       );
     } else if (_image != null) {
-      return AspectRatio(
-        aspectRatio: 3/4, // 일반적인 사진 비율
-        child: FutureBuilder<Uint8List>(
-          future: _image!.readAsBytes(),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              return Image.memory(
-                snapshot.data!,
-                fit: BoxFit.cover,
-              );
-            }
-            return Container(
-              color: Colors.grey.shade300,
-              child: Center(
-                child: CircularProgressIndicator(),
-              ),
+      return FutureBuilder<Uint8List>(
+        future: _image!.readAsBytes(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return Image.memory(
+              snapshot.data!,
+              fit: BoxFit.contain, // cover에서 contain으로 변경하여 비율 유지
             );
-          },
-        ),
+          }
+          return Container(
+            color: Colors.grey.shade300,
+            child: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        },
       );
     }
     return Container(
       color: Colors.grey.shade300,
       child: Center(
-        child: Text(
-          '사진이 없습니다',
-          style: TextStyle(
-            color: Colors.grey.shade600,
-            fontSize: 16,
-          ),
-        ),
+        child: Text('사진이 없습니다'),
       ),
     );
   }
@@ -542,7 +513,7 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
     );
   }
 
-  // 선택된 프레임과 함께 사진을 표시하는 위젯 (모바일 최적화)
+  // 선택된 프레임과 함께 사진을 표시하는 위젯
   Widget _buildPhotoWithFrame() {
     if (_image == null) return _buildPhotoPreview();
 
@@ -564,50 +535,41 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
     Color frameColor = selectedFrameData['color'] as Color;
     Color borderColor = selectedFrameData['borderColor'] as Color;
 
-    // 화면 크기에 맞춰 동적으로 크기 조정
-    double screenWidth = MediaQuery.of(context).size.width;
-    double frameWidth = screenWidth * 0.8;
-    double frameHeight = frameWidth * 4/3; // 4:3 비율 유지
-    
-    // 최대 크기 제한
-    frameWidth = frameWidth > 350 ? 350 : frameWidth;
-    frameHeight = frameHeight > 467 ? 467 : frameHeight;
-
     return Container(
-      width: frameWidth,
-      height: frameHeight,
+      width: 300,
+      height: 400,
       decoration: BoxDecoration(
         color: frameColor,
-        border: Border.all(color: borderColor, width: 4),
-        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: borderColor, width: 6),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: Colors.black26,
-            blurRadius: 10,
+            blurRadius: 15,
             offset: Offset(0, 5),
           ),
         ],
       ),
       child: Padding(
-        padding: EdgeInsets.all(8),
+        padding: EdgeInsets.all(12),
         child: Column(
           children: [
             // 브랜드명 또는 로고 영역
             Container(
-              height: 25,
+              height: 30,
               child: Center(
                 child: Text(
                   'AFTERSCHOOL PHOTO BOOTH',
                   style: TextStyle(
-                    fontSize: 8,
+                    fontSize: 10,
                     fontWeight: FontWeight.bold,
                     color: borderColor,
-                    letterSpacing: 0.5,
+                    letterSpacing: 1,
                   ),
                 ),
               ),
             ),
-            SizedBox(height: 4),
+            SizedBox(height: 8),
             // 사진 영역들
             Expanded(
               child: layout == 'vertical'
@@ -615,21 +577,21 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
                       children: List.generate(cuts, (index) {
                         return Expanded(
                           child: Container(
-                            margin: EdgeInsets.symmetric(vertical: 2),
+                            margin: EdgeInsets.symmetric(vertical: 3),
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(6),
+                              borderRadius: BorderRadius.circular(8),
                               border: Border.all(
                                   color: Colors.grey.shade400, width: 1),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.black12,
-                                  blurRadius: 2,
+                                  blurRadius: 3,
                                   offset: Offset(0, 1),
                                 ),
                               ],
                             ),
                             child: ClipRRect(
-                              borderRadius: BorderRadius.circular(5),
+                              borderRadius: BorderRadius.circular(7),
                               child: _buildPhotoPreview(),
                             ),
                           ),
@@ -644,21 +606,21 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
                             children: List.generate(2, (index) {
                               return Expanded(
                                 child: Container(
-                                  margin: EdgeInsets.all(2),
+                                  margin: EdgeInsets.all(3),
                                   decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(6),
+                                    borderRadius: BorderRadius.circular(8),
                                     border: Border.all(
                                         color: Colors.grey.shade400, width: 1),
                                     boxShadow: [
                                       BoxShadow(
                                         color: Colors.black12,
-                                        blurRadius: 2,
+                                        blurRadius: 3,
                                         offset: Offset(0, 1),
                                       ),
                                     ],
                                   ),
                                   child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(5),
+                                    borderRadius: BorderRadius.circular(7),
                                     child: _buildPhotoPreview(),
                                   ),
                                 ),
@@ -672,21 +634,21 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
                             children: List.generate(2, (index) {
                               return Expanded(
                                 child: Container(
-                                  margin: EdgeInsets.all(2),
+                                  margin: EdgeInsets.all(3),
                                   decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(6),
+                                    borderRadius: BorderRadius.circular(8),
                                     border: Border.all(
                                         color: Colors.grey.shade400, width: 1),
                                     boxShadow: [
                                       BoxShadow(
                                         color: Colors.black12,
-                                        blurRadius: 2,
+                                        blurRadius: 3,
                                         offset: Offset(0, 1),
                                       ),
                                     ],
                                   ),
                                   child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(5),
+                                    borderRadius: BorderRadius.circular(7),
                                     child: _buildPhotoPreview(),
                                   ),
                                 ),
@@ -700,21 +662,21 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
                             children: List.generate(2, (index) {
                               return Expanded(
                                 child: Container(
-                                  margin: EdgeInsets.all(2),
+                                  margin: EdgeInsets.all(3),
                                   decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(6),
+                                    borderRadius: BorderRadius.circular(8),
                                     border: Border.all(
                                         color: Colors.grey.shade400, width: 1),
                                     boxShadow: [
                                       BoxShadow(
                                         color: Colors.black12,
-                                        blurRadius: 2,
+                                        blurRadius: 3,
                                         offset: Offset(0, 1),
                                       ),
                                     ],
                                   ),
                                   child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(5),
+                                    borderRadius: BorderRadius.circular(7),
                                     child: _buildPhotoPreview(),
                                   ),
                                 ),
@@ -725,15 +687,15 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
                       ],
                     ),
             ),
-            SizedBox(height: 4),
+            SizedBox(height: 8),
             // 하단 날짜 또는 로고 영역
             Container(
-              height: 15,
+              height: 20,
               child: Center(
                 child: Text(
                   DateTime.now().toString().substring(0, 10),
                   style: TextStyle(
-                    fontSize: 6,
+                    fontSize: 8,
                     color: Colors.grey.shade600,
                   ),
                 ),
@@ -1152,14 +1114,10 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
                     ] else if (kIsWeb) ...[
                       // 웹 카메라 상태에 따른 UI
                       if (_isWebCameraInitialized) ...[
-                        // 웹 카메라 미리보기 (모바일 최적화)
+                        // 웹 카메라 미리보기
                         Container(
-                          width: MediaQuery.of(context).size.width * 0.8,
-                          height: MediaQuery.of(context).size.width * 0.8 * 3/4, // 4:3 비율의 역수
-                          constraints: BoxConstraints(
-                            maxWidth: 350,
-                            maxHeight: 262, // 350 * 3/4
-                          ),
+                          width: 350,
+                          height: 300,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(20),
                             color: Colors.black87,
@@ -1207,14 +1165,10 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
                           ],
                         ),
                       ] else ...[
-                        // 카메라 초기화 중이거나 실패한 경우 (모바일 최적화)
+                        // 카메라 초기화 중이거나 실패한 경우
                         Container(
-                          width: MediaQuery.of(context).size.width * 0.8,
-                          height: MediaQuery.of(context).size.width * 0.8 * 3/4,
-                          constraints: BoxConstraints(
-                            maxWidth: 350,
-                            maxHeight: 262,
-                          ),
+                          width: 350,
+                          height: 300,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(20),
                             color: Colors.black87,
@@ -1236,18 +1190,16 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
                                   '카메라를 준비중입니다...',
                                   style: TextStyle(
                                     color: Colors.white70,
-                                    fontSize: 16,
+                                    fontSize: 18,
                                   ),
-                                  textAlign: TextAlign.center,
                                 ),
                                 SizedBox(height: 10),
                                 Text(
                                   '카메라 권한을 허용해주세요',
                                   style: TextStyle(
                                     color: Colors.white70,
-                                    fontSize: 12,
+                                    fontSize: 14,
                                   ),
-                                  textAlign: TextAlign.center,
                                 ),
                               ],
                             ),
@@ -1300,14 +1252,9 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
                       ),
                     ],
                   ] else ...[
-                    // 촬영된 사진 미리보기 (모바일 친화적 크기)
                     Container(
-                      width: MediaQuery.of(context).size.width * 0.8,
-                      height: MediaQuery.of(context).size.width * 0.8 * 4/3, // 4:3 비율
-                      constraints: BoxConstraints(
-                        maxWidth: 350,
-                        maxHeight: 467, // 350 * 4/3
-                      ),
+                      width: 300,
+                      height: 400,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
@@ -1320,7 +1267,26 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
                       ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(20),
-                        child: _buildPhotoPreview(),
+                        child: FutureBuilder<Uint8List>(
+                          future: _image!.readAsBytes(),
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData) {
+                              return Image.memory(
+                                snapshot.data!,
+                                fit: BoxFit.contain, // 비율 유지
+                              );
+                            }
+                            return Container(
+                              color: Colors.grey.shade300,
+                              child: Center(
+                                child: CircularProgressIndicator(),
+                              ),
+                            );
+                                child: CircularProgressIndicator(),
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ),
                     SizedBox(height: 30),
@@ -1398,15 +1364,11 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
           Expanded(
             child: Column(
               children: [
-                // 사진 미리보기 (모바일 최적화)
+                // 사진 미리보기
                 Container(
                   margin: EdgeInsets.all(20),
-                  width: MediaQuery.of(context).size.width * 0.8,
-                  height: MediaQuery.of(context).size.width * 0.8 * 4/3,
-                  constraints: BoxConstraints(
-                    maxWidth: 350,
-                    maxHeight: 467,
-                  ),
+                  width: 300,
+                  height: 400,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
@@ -1521,14 +1483,9 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
                     ),
                   ),
                   SizedBox(height: 30),
-                  // 완성된 사진 미리보기 (모바일 최적화)
                   Container(
-                    width: MediaQuery.of(context).size.width * 0.8,
-                    height: MediaQuery.of(context).size.width * 0.8 * 4/3,
-                    constraints: BoxConstraints(
-                      maxWidth: 350,
-                      maxHeight: 467,
-                    ),
+                    width: 300,
+                    height: 400,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
