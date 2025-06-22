@@ -285,22 +285,15 @@ class _FilterSelectionScreenState extends State<FilterSelectionScreen> {
       future: widget.selectedPhotos[index].readAsBytes(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
-          return Container(
-            decoration: BoxDecoration(
-              boxShadow: [
-                BoxShadow(
-                  color: _getFilterOverlay(),
-                  blurRadius: 0,
-                ),
-              ],
-            ),
-            child: Image.memory(
-              snapshot.data!,
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: double.infinity,
-            ),
+          Widget imageWidget = Image.memory(
+            snapshot.data!,
+            fit: BoxFit.cover,
+            width: double.infinity,
+            height: double.infinity,
           );
+
+          // 필터 적용
+          return _applyFilter(imageWidget);
         } else if (snapshot.hasError) {
           return Container(
             color: Colors.red.shade200,
@@ -327,16 +320,45 @@ class _FilterSelectionScreenState extends State<FilterSelectionScreen> {
     );
   }
 
-  Color _getFilterOverlay() {
+  Widget _applyFilter(Widget image) {
     switch (widget.selectedFilter) {
       case 'Sepia':
-        return Colors.brown.withOpacity(0.3);
+        return ColorFiltered(
+          colorFilter: ColorFilter.matrix([
+            0.393, 0.769, 0.189, 0, 0,
+            0.349, 0.686, 0.168, 0, 0,
+            0.272, 0.534, 0.131, 0, 0,
+            0, 0, 0, 1, 0,
+          ]),
+          child: image,
+        );
       case 'Black & White':
-        return Colors.grey.withOpacity(0.5);
+        return ColorFiltered(
+          colorFilter: ColorFilter.matrix([
+            0.33, 0.33, 0.33, 0, 0,
+            0.33, 0.33, 0.33, 0, 0,
+            0.33, 0.33, 0.33, 0, 0,
+            0, 0, 0, 1, 0,
+          ]),
+          child: image,
+        );
       case 'Vintage':
-        return Colors.orange.withOpacity(0.2);
-      default:
-        return Colors.transparent;
+        return ColorFiltered(
+          colorFilter: ColorFilter.matrix([
+            1.2, 0, 0.2, 0, 0,
+            0, 1.0, 0, 0, 0,
+            0, 0, 0.8, 0, 0,
+            0, 0, 0, 1, 0,
+          ]),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.orange.withOpacity(0.1),
+            ),
+            child: image,
+          ),
+        );
+      default: // Original
+        return image;
     }
   }
 

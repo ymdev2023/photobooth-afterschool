@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../models/photo_booth_step.dart';
 
 class WelcomeScreen extends StatelessWidget {
   final VoidCallback onStart;
@@ -34,7 +33,7 @@ class WelcomeScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          '📸 포토부스',
+                          '📸 AFTERSCHOOL PHOTO BOOTH',
                           style: TextStyle(
                             fontSize: titleSize,
                             fontWeight: FontWeight.bold,
@@ -43,7 +42,7 @@ class WelcomeScreen extends StatelessWidget {
                         ),
                         SizedBox(height: 20),
                         Text(
-                          '인생네컷을 찍어보세요!',
+                          '기억에 남는 사진을 찍어보세요!',
                           style: TextStyle(
                             fontSize: subtitleSize,
                             color: Colors.white70,
@@ -74,7 +73,51 @@ class WelcomeScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  // 버전 정보
+                  // 개발자 정보 - 우측 상단
+                  Positioned(
+                    top: 20,
+                    right: 20,
+                    child: Container(
+                      padding: EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.2),
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            'New Contents Academy',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: isWideScreen ? 14 : 12,
+                            ),
+                          ),
+                          Text(
+                            '(Gong)dongchae',
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: isWideScreen ? 12 : 10,
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'Developed by Yoon Myung Kim',
+                            style: TextStyle(
+                              color: Colors.white60,
+                              fontSize: isWideScreen ? 11 : 9,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // 버전 정보 - 하단
                   Positioned(
                     bottom: 20,
                     left: 20,
@@ -92,7 +135,7 @@ class WelcomeScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'v1.0.2 (2025.06.22)',
+                            'v1.0.3 (2025.06.22)',
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -110,7 +153,7 @@ class WelcomeScreen extends StatelessWidget {
                           ),
                           SizedBox(height: 4),
                           Text(
-                            '• 촬영 중 오버레이 최소화로 라이브 뷰 개선\n• 실제 촬영 이미지 표시 및 선택 기능 추가\n• 선택된 사진으로 프레임 미리보기 구현\n• 상세한 로깅 시스템 추가',
+                            '• 촬영 후 1초간 결과물 미리보기 표시\n• 원형 타이머로 촬영 간격 시각화\n• 필터 적용 기능 개선 (Sepia, B&W, Vintage)\n• 4컷/6컷 프레임에 사진 정확히 배치',
                             style: TextStyle(
                               color: Colors.white60,
                               fontSize: isWideScreen ? 13 : 11,

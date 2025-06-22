@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../widgets/common_widgets.dart';
 import '../services/camera_service.dart';
 import 'dart:html' as html;
 import 'dart:ui' as ui;
 import 'dart:async';
+import 'dart:typed_data';
 
 class PhotoCaptureScreen extends StatefulWidget {
   final CameraService cameraService;
@@ -25,9 +27,12 @@ class PhotoCaptureScreen extends StatefulWidget {
 
 class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
   int _countdown = 0;
+  int _intervalCountdown = 0; // 촬영 간격 카운트다운
   bool _isInitializing = false;
   String? _errorMessage;
   bool _isCaptureFlash = false; // 촬영 플래시 효과
+  XFile? _previewPhoto; // 촬영 결과 미리보기용
+  bool _showPreview = false; // 미리보기 표시 여부
 
   @override
   void initState() {
@@ -138,44 +143,124 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
                           borderRadius: BorderRadius.circular(18),
                         ),
                       ),
-                    // 촬영 상태 표시 - 오버레이 최소화
+                    // 원형 타이머 - 오른쪽 상단
+                    if (widget.cameraService.isCapturing &&
+                        _countdown == 0 &&
+                        !_isCaptureFlash &&
+                        _intervalCountdown > 0)
+                      Positioned(
+                        top: 20,
+                        right: 20,
+                        child: Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.7),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.3),
+                              width: 2,
+                            ),
+                          ),
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              // 원형 프로그레스 인디케이터
+                              SizedBox(
+                                width: 60,
+                                height: 60,
+                                child: CircularProgressIndicator(
+                                  value: (_intervalCountdown) / 10.0,
+                                  strokeWidth: 4,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.pink),
+                                  backgroundColor: Colors.white.withOpacity(0.3),
+                                ),
+                              ),
+                              // 남은 시간 텍스트
+                              Text(
+                                _intervalCountdown.toString(),
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    // 촬영 진행 상태 표시 (좌측 상단)
                     if (widget.cameraService.isCapturing &&
                         _countdown == 0 &&
                         !_isCaptureFlash)
                       Positioned(
                         top: 20,
                         left: 20,
-                        right: 20,
                         child: Container(
                           padding:
-                              EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
                             color: Colors.pink.withOpacity(0.9),
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(15),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white),
+                          child: Text(
+                            '${widget.cameraService.captureCount} / 8',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    // 촬영 결과 미리보기 오버레이
+                    if (_showPreview && _previewPhoto != null)
+                      Container(
+                        width: double.infinity,
+                        height: double.infinity,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.8),
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        child: Center(
+                          child: Container(
+                            width: 300,
+                            height: 300,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(15),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.3),
+                                  blurRadius: 10,
+                                  offset: Offset(0, 5),
                                 ),
+                              ],
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(15),
+                              child: FutureBuilder<Uint8List>(
+                                future: _previewPhoto!.readAsBytes(),
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasData) {
+                                    return Image.memory(
+                                      snapshot.data!,
+                                      fit: BoxFit.cover,
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                    );
+                                  } else {
+                                    return Center(
+                                      child: CircularProgressIndicator(
+                                        valueColor: AlwaysStoppedAnimation<Color>(
+                                            Colors.pink),
+                                      ),
+                                    );
+                                  }
+                                },
                               ),
-                              SizedBox(width: 12),
-                              Text(
-                                '촬영 중... (${widget.cameraService.captureCount}/8)',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
                       ),
@@ -240,10 +325,21 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
           });
         }
       },
+      onIntervalUpdate: (intervalCountdown) {
+        // 간격 카운트다운 업데이트
+        if (_intervalCountdown != intervalCountdown) {
+          setState(() {
+            _intervalCountdown = intervalCountdown;
+          });
+        }
+      },
       onCaptureComplete: () {
         setState(() {
           _countdown = 0;
+          _intervalCountdown = 0;
           _isCaptureFlash = false;
+          _showPreview = false;
+          _previewPhoto = null;
         });
         widget.onNext();
       },
@@ -258,6 +354,22 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
           if (mounted) {
             setState(() {
               _isCaptureFlash = false;
+            });
+          }
+        });
+      },
+      onPhotoPreview: (photo) {
+        // 촬영 결과 미리보기
+        setState(() {
+          _previewPhoto = photo;
+          _showPreview = true;
+        });
+        
+        // 1초 후 미리보기 숨김
+        Timer(Duration(seconds: 1), () {
+          if (mounted) {
+            setState(() {
+              _showPreview = false;
             });
           }
         });
