@@ -443,7 +443,7 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen>
       ..muted = true
       ..style.width = '100%'
       ..style.height = '100%'
-      ..style.objectFit = 'cover' // 촬영용은 cover로 사용
+      ..style.objectFit = 'contain' // contain으로 변경하여 일정한 비율로 표시
       ..style.transform = 'scaleX(-1)'; // 미러 효과
 
     ui_web.platformViewRegistry.registerViewFactory(
