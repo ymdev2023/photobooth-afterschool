@@ -73,6 +73,11 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
         case PhotoBoothStep.photoCapture:
           // 촬영된 사진들을 가져와서 저장
           capturedPhotos = cameraService.getCapturedPhotos();
+          print('📷 촬영 완료 - 사진 수집');
+          print('카메라 서비스에서 가져온 사진 수: ${capturedPhotos.length}');
+          for (int i = 0; i < capturedPhotos.length; i++) {
+            print('  사진 ${i + 1}: ${capturedPhotos[i].name}');
+          }
           currentStep = PhotoBoothStep.photoSelection;
           break;
         case PhotoBoothStep.photoSelection:

@@ -350,6 +350,13 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen>
         }
       },
       onCaptureComplete: () {
+        print('📸 촬영 완료 콜백 호출됨');
+        final capturedPhotos = widget.cameraService.getCapturedPhotos();
+        print('촬영된 사진 수: ${capturedPhotos.length}');
+        for (int i = 0; i < capturedPhotos.length; i++) {
+          print('  촬영 사진 ${i + 1}: ${capturedPhotos[i].name}');
+        }
+        
         _countdown.value = 0;
         _intervalCountdown.value = 0;
         _isCaptureFlash.value = false;
@@ -360,6 +367,7 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen>
         // 3초 후 다음 화면으로 이동
         Timer(Duration(seconds: 3), () {
           if (mounted) {
+            print('다음 화면으로 이동 (사진 선택 스크린)');
             _isProcessing.value = false;
             widget.onNext();
           }

@@ -36,11 +36,22 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen> {
     _selectedPhotos = List.from(widget.selectedPhotos);
 
     // 전달받은 사진 정보 로깅
-    print('PhotoSelectionScreen 초기화');
-    print('전달받은 사진 수: ${widget.capturedPhotos.length}');
+    print('📷 PhotoSelectionScreen 초기화');
+    print('전달받은 촬영 사진 수: ${widget.capturedPhotos.length}');
+    print('기존에 선택된 사진 수: ${widget.selectedPhotos.length}');
+    print('선택된 프레임: ${widget.selectedFrame}');
+    
     for (int i = 0; i < widget.capturedPhotos.length; i++) {
-      print('  ${i + 1}. ${widget.capturedPhotos[i].name}');
+      print('  촬영 사진 ${i + 1}: ${widget.capturedPhotos[i].name}');
     }
+    
+    if (widget.capturedPhotos.isEmpty) {
+      print('⚠️ 경고: 촬영된 사진이 없습니다!');
+    }
+    
+    // 필요한 사진 수 확인
+    int requiredCount = _getRequiredPhotoCount(widget.selectedFrame);
+    print('필요한 사진 수: $requiredCount');
   }
 
   @override
@@ -144,8 +155,10 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen> {
                                   _selectedPhotos.indexOf(photo) + 1;
 
                               return GestureDetector(
-                                onTap: () => _togglePhotoSelection(
-                                    photo, requiredPhotoCount),
+                                onTap: () {
+                                  print('🖱️ 사진 탭됨: index=$index, name=${photo.name}');
+                                  _togglePhotoSelection(photo, requiredPhotoCount);
+                                },
                                 child: Container(
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(15),
@@ -181,6 +194,7 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen> {
                                             future: photo.readAsBytes(),
                                             builder: (context, snapshot) {
                                               if (snapshot.hasData) {
+                                                print('✅ 사진 로드 완료: ${photo.name}, 크기: ${snapshot.data!.length} bytes');
                                                 return Image.memory(
                                                   snapshot.data!,
                                                   fit: BoxFit.cover,
@@ -188,6 +202,7 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen> {
                                                   height: double.infinity,
                                                 );
                                               } else if (snapshot.hasError) {
+                                                print('❌ 사진 로드 에러: ${photo.name}, 에러: ${snapshot.error}');
                                                 return Container(
                                                   color: Colors.red.shade200,
                                                   child: Center(
@@ -328,20 +343,32 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen> {
   }
 
   void _togglePhotoSelection(XFile photo, int requiredCount) {
+    print('_togglePhotoSelection 호출됨');
+    print('선택하려는 사진: ${photo.name}');
+    print('현재 선택된 사진 수: ${_selectedPhotos.length}');
+    print('필요한 사진 수: $requiredCount');
+    print('이미 선택되어 있는가? ${_selectedPhotos.contains(photo)}');
+    
     setState(() {
       if (_selectedPhotos.contains(photo)) {
         _selectedPhotos.remove(photo);
-        print('사진 선택 해제: ${photo.name}');
+        print('✅ 사진 선택 해제: ${photo.name}');
       } else if (_selectedPhotos.length < requiredCount) {
         _selectedPhotos.add(photo);
-        print('사진 선택: ${photo.name}');
+        print('✅ 사진 선택: ${photo.name}');
       } else {
         // 최대 개수에 도달했을 때는 첫 번째 사진을 제거하고 새로운 사진을 추가
         XFile removedPhoto = _selectedPhotos.removeAt(0);
         _selectedPhotos.add(photo);
-        print('사진 교체: ${removedPhoto.name} -> ${photo.name}');
+        print('✅ 사진 교체: ${removedPhoto.name} -> ${photo.name}');
       }
-      print('현재 선택된 사진 수: ${_selectedPhotos.length}/$requiredCount');
+      print('📊 현재 선택된 사진 수: ${_selectedPhotos.length}/$requiredCount');
+      
+      // 선택된 사진 목록 출력
+      print('📋 선택된 사진 목록:');
+      for (int i = 0; i < _selectedPhotos.length; i++) {
+        print('  ${i + 1}. ${_selectedPhotos[i].name}');
+      }
     });
   }
 }
