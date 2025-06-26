@@ -477,25 +477,63 @@ class _FilterSelectionScreenState extends State<FilterSelectionScreen> {
   Future<void> _onNextPressed() async {
     if (widget.selectedFilter != null && widget.selectedPhotos.isNotEmpty) {
       try {
+        print('_onNextPressed 시작');
+        
         // 필터링된 최종 이미지 생성
         final filteredImage = await _generateFilteredImage();
+        print('필터링된 이미지 생성 완료, 크기: ${filteredImage.length} bytes');
 
         // 생성된 이미지를 상위 컴포넌트로 전달
         widget.onFilteredImageGenerated(filteredImage);
+        print('필터링된 이미지 전달 완료');
 
         // 다음 단계로 이동
         widget.onNext();
+        print('다음 단계로 이동');
       } catch (e) {
         print('필터링된 이미지 생성 실패: $e');
         // 오류가 발생해도 다음 단계로 이동
         widget.onNext();
       }
+    } else {
+      print('필터나 사진이 선택되지 않음');
+      // 기본 이미지라도 전달
+      if (widget.selectedPhotos.isNotEmpty) {
+        final firstPhoto = widget.selectedPhotos.first;
+        final photoBytes = await firstPhoto.readAsBytes();
+        widget.onFilteredImageGenerated(photoBytes);
+      }
+      widget.onNext();
     }
   }
 
   Future<Uint8List> _generateFilteredImage() async {
-    // 임시로 첫 번째 사진을 사용 (실제로는 프레임과 필터가 적용된 이미지를 생성해야 함)
-    final firstPhoto = widget.selectedPhotos.first;
-    return await firstPhoto.readAsBytes();
+    try {
+      print('필터링된 이미지 생성 시작');
+      print('선택된 프레임: ${widget.selectedFrame}');
+      print('선택된 필터: ${widget.selectedFilter}');
+      print('선택된 사진 수: ${widget.selectedPhotos.length}');
+
+      // 프레임 정보 확인 (나중에 사용)
+      if (widget.selectedFrame != null && widget.selectedFrame != 'None') {
+        print('프레임이 선택됨: ${widget.selectedFrame}');
+      }
+
+      // 첫 번째 사진 로드 (임시로 단일 사진 처리)
+      final firstPhoto = widget.selectedPhotos.first;
+      final photoBytes = await firstPhoto.readAsBytes();
+      
+      // 필터가 적용된 이미지를 반환
+      // 실제 구현에서는 Canvas를 사용해서 프레임과 사진을 합성해야 하지만
+      // 지금은 간단히 사진만 반환
+      print('필터링된 이미지 생성 완료');
+      return photoBytes;
+      
+    } catch (e) {
+      print('필터링된 이미지 생성 중 오류: $e');
+      // 오류 발생 시 첫 번째 사진 반환
+      final firstPhoto = widget.selectedPhotos.first;
+      return await firstPhoto.readAsBytes();
+    }
   }
 }

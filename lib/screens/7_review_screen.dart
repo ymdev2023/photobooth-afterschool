@@ -18,148 +18,166 @@ class ReviewScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: Colors.black,
       body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final isWideScreen = constraints.maxWidth > 600;
-            final titleSize = isWideScreen ? 28.0 : 24.0;
-            final imageWidth = isWideScreen
-                ? constraints.maxWidth * 0.4
-                : constraints.maxWidth * 0.8;
-            final imageHeight = imageWidth * 1.33; // 4:3 비율
-
-            return Padding(
-              padding: EdgeInsets.all(isWideScreen ? 30 : 20),
-              child: Column(
-                children: [
-                  // 제목만 표시, step indicator 제거
-                  Text(
-                    '최종 확인',
-                    style: TextStyle(
-                      fontSize: isWideScreen ? 28 : 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                    textAlign: TextAlign.center,
+        child: Padding(
+          padding: EdgeInsets.all(20),
+          child: Column(
+            children: [
+              // 헤더
+              Container(
+                padding: EdgeInsets.symmetric(vertical: 20, horizontal: 30),
+                child: Text(
+                  '최종 완성된 사진을 확인해주세요',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
-                  SizedBox(height: 20),
-                  Expanded(
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            '완성된 사진입니다!',
-                            style: TextStyle(
-                              fontSize: titleSize,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
-                          ),
-                          SizedBox(height: 30),
-                          Container(
-                            width: imageWidth,
-                            height: imageHeight,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black26,
-                                  blurRadius: 15,
-                                  offset: Offset(0, 8),
-                                ),
-                              ],
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(20),
-                              child: filteredImage != null
-                                  ? Image.memory(
-                                      filteredImage!,
-                                      fit: BoxFit.cover,
-                                    )
-                                  : Container(
-                                      color: Colors.white,
-                                      child: Center(
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Icons.image,
-                                              color: Colors.grey.shade600,
-                                              size: 80,
-                                            ),
-                                            SizedBox(height: 20),
-                                            Text(
-                                              '완성된 사진',
-                                              style: TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.grey.shade700,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                            ),
-                          ),
-                          SizedBox(height: 40),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              ElevatedButton(
-                                onPressed: onBack,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.grey.shade200,
-                                  foregroundColor: Colors.grey.shade700,
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: isWideScreen ? 40 : 30,
-                                      vertical: isWideScreen ? 18 : 15),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(25),
-                                  ),
-                                ),
-                                child: Text(
-                                  '수정하기',
-                                  style: TextStyle(
-                                    fontSize: isWideScreen ? 18 : 16,
-                                  ),
-                                ),
-                              ),
-                              SizedBox(width: 20),
-                              ElevatedButton(
-                                onPressed: onNext,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.pink,
-                                  foregroundColor: Colors.white,
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: isWideScreen ? 40 : 30,
-                                      vertical: isWideScreen ? 18 : 15),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(25),
-                                  ),
-                                ),
-                                child: Text(
-                                  '확정하기',
-                                  style: TextStyle(
-                                    fontSize: isWideScreen ? 18 : 16,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              SizedBox(height: 30),
+              // 완성된 사진 미리보기
+              Expanded(
+                child: Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade900,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.white24, width: 2),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(18),
+                    child: _buildImagePreview(),
+                  ),
+                ),
+              ),
+              SizedBox(height: 30),
+              // 안내 텍스트
+              Container(
+                padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                decoration: BoxDecoration(
+                  color: Colors.pink.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.pink.withOpacity(0.3), width: 1),
+                ),
+                child: Text(
+                  '🎉 멋진 사진이 완성되었습니다!\n마음에 드시면 "확정하기"를 눌러 다운로드하세요',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
+              // 네비게이션 버튼
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: onBack,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white.withOpacity(0.2),
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
                       ),
+                      elevation: 5,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.arrow_back),
+                        SizedBox(width: 8),
+                        Text(
+                          '수정하기',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: onNext,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.pink,
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                      elevation: 5,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.check_circle),
+                        SizedBox(width: 8),
+                        Text(
+                          '확정하기',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
-            );
-          },
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  Widget _buildImagePreview() {
+    if (filteredImage != null) {
+      return Image.memory(
+        filteredImage!,
+        fit: BoxFit.contain,
+        width: double.infinity,
+        height: double.infinity,
+      );
+    } else {
+      return Container(
+        color: Colors.grey.shade800,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.image_outlined,
+                size: 80,
+                color: Colors.white54,
+              ),
+              SizedBox(height: 20),
+              Text(
+                '완성된 사진을 불러오는 중...',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 16,
+                ),
+              ),
+              SizedBox(height: 10),
+              Text(
+                '필터가 적용된 사진이 여기에 표시됩니다',
+                style: TextStyle(
+                  color: Colors.white54,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
   }
 }
