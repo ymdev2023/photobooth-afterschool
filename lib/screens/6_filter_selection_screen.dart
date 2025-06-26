@@ -74,8 +74,8 @@ class _FilterSelectionScreenState extends State<FilterSelectionScreen> {
 
                   // 프레임 미리보기 섹션
                   Container(
-                    width: previewSize,
-                    height: previewSize * (3 / 4), // 정확한 4:3 비율 (세로가 더 짧아야 함)
+                    width: previewSize * 0.4, // 1:10 비율에 맞게 너비 조정
+                    height: previewSize * 4, // 1:10 비율 (세로로 긴 형태)
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(15),
@@ -523,8 +523,8 @@ class _FilterSelectionScreenState extends State<FilterSelectionScreen> {
       final frameBytes = await FrameCompositionService.composeWithFrame(
         photos: widget.selectedPhotos,
         frameType: widget.selectedFrame ?? 'classic_4cut',
-        width: 800,
-        height: 600, // 정확한 4:3 비율 (800x600)
+        width: 400,
+        height: 4000, // 1:10 비율 (400x4000)
       );
 
       // 필터 적용 (현재는 Original만 지원, 추후 확장 가능)
