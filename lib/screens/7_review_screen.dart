@@ -60,7 +60,8 @@ class ReviewScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Colors.pink.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.pink.withOpacity(0.3), width: 1),
+                  border:
+                      Border.all(color: Colors.pink.withOpacity(0.3), width: 1),
                 ),
                 child: Text(
                   '🎉 멋진 사진이 완성되었습니다!\n마음에 드시면 "확정하기"를 눌러 다운로드하세요',
@@ -82,7 +83,8 @@ class ReviewScreen extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white.withOpacity(0.2),
                       foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
                       ),
@@ -108,7 +110,8 @@ class ReviewScreen extends StatelessWidget {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.pink,
                       foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 30, vertical: 15),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
                       ),

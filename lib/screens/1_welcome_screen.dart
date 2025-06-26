@@ -135,7 +135,7 @@ class WelcomeScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'v2.4.0 (2025.06.26)',
+                            'v2.5.0 (2025.06.26)',
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -153,7 +153,7 @@ class WelcomeScreen extends StatelessWidget {
                           ),
                           SizedBox(height: 4),
                           Text(
-                            '• 화면 깜박임 문제 근본적 해결\n• ValueNotifier와 ValueListenableBuilder로 성능 최적화\n• 촬영 타이머 및 플래시 효과 부드럽게 개선\n• setState() 제거로 불필요한 리빌드 방지\n• 자연스러운 촬영 진행 상태 표시',
+                            '• 리뷰 스크린 UI/UX 대폭 개선\n• 포토부스 테마에 맞는 검은 배경 디자인\n• 완성된 사진 미리보기 기능 향상\n• 이미지 전달 로직 강화 및 에러 처리 개선\n• 버튼 디자인 및 사용자 경험 개선',
                             style: TextStyle(
                               color: Colors.white60,
                               fontSize: isWideScreen ? 13 : 11,

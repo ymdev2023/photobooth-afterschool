@@ -478,7 +478,7 @@ class _FilterSelectionScreenState extends State<FilterSelectionScreen> {
     if (widget.selectedFilter != null && widget.selectedPhotos.isNotEmpty) {
       try {
         print('_onNextPressed 시작');
-        
+
         // 필터링된 최종 이미지 생성
         final filteredImage = await _generateFilteredImage();
         print('필터링된 이미지 생성 완료, 크기: ${filteredImage.length} bytes');
@@ -522,13 +522,12 @@ class _FilterSelectionScreenState extends State<FilterSelectionScreen> {
       // 첫 번째 사진 로드 (임시로 단일 사진 처리)
       final firstPhoto = widget.selectedPhotos.first;
       final photoBytes = await firstPhoto.readAsBytes();
-      
+
       // 필터가 적용된 이미지를 반환
       // 실제 구현에서는 Canvas를 사용해서 프레임과 사진을 합성해야 하지만
       // 지금은 간단히 사진만 반환
       print('필터링된 이미지 생성 완료');
       return photoBytes;
-      
     } catch (e) {
       print('필터링된 이미지 생성 중 오류: $e');
       // 오류 발생 시 첫 번째 사진 반환
