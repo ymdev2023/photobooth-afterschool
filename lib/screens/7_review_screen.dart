@@ -171,12 +171,53 @@ class ReviewScreen extends StatelessWidget {
   }
 
   Widget _buildImagePreview() {
+    print('🔍 리뷰 스크린 이미지 미리보기:');
+    print('  filteredImage가 null인가? ${filteredImage == null}');
     if (filteredImage != null) {
-      return Image.memory(
-        filteredImage!,
-        fit: BoxFit.contain,
-        width: double.infinity,
-        height: double.infinity,
+      print('  filteredImage 크기: ${filteredImage!.length} bytes');
+    }
+    
+    if (filteredImage != null) {
+      return Container(
+        child: Column(
+          children: [
+            // 이미지 정보 표시
+            Container(
+              padding: EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.pink.withOpacity(0.2),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(18),
+                  topRight: Radius.circular(18),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.photo_camera, color: Colors.pink, size: 16),
+                  SizedBox(width: 8),
+                  Text(
+                    '프레임이 적용된 최종 사진 (${(filteredImage!.length / 1024).toStringAsFixed(1)}KB)',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // 실제 이미지
+            Expanded(
+              child: Image.memory(
+                filteredImage!,
+                fit: BoxFit.contain,
+                width: double.infinity,
+                height: double.infinity,
+              ),
+            ),
+          ],
+        ),
       );
     } else {
       return Container(

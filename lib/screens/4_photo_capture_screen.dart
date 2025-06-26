@@ -29,19 +29,16 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen>
     with TickerProviderStateMixin {
   // 애니메이션 컨트롤러들
   late AnimationController _countdownController;
-  late AnimationController _flashController;
   late AnimationController _progressController;
 
   // 상태 관리를 위한 ValueNotifier들 (setState 대신 사용)
   final ValueNotifier<int> _countdown = ValueNotifier<int>(0);
   final ValueNotifier<int> _intervalCountdown = ValueNotifier<int>(0);
   final ValueNotifier<int> _captureCount = ValueNotifier<int>(0); // 촬영 카운트 추가
-  final ValueNotifier<bool> _isCaptureFlash = ValueNotifier<bool>(false);
   final ValueNotifier<bool> _showPreview = ValueNotifier<bool>(false);
   final ValueNotifier<bool> _isProcessing = ValueNotifier<bool>(false);
 
   XFile? _previewPhoto;
-  Timer? _flashTimer;
   Timer? _previewTimer;
 
   @override
@@ -50,10 +47,6 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen>
     // 애니메이션 컨트롤러 초기화
     _countdownController = AnimationController(
       duration: Duration(milliseconds: 300),
-      vsync: this,
-    );
-    _flashController = AnimationController(
-      duration: Duration(milliseconds: 100),
       vsync: this,
     );
     _progressController = AnimationController(
@@ -65,15 +58,12 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen>
   @override
   void dispose() {
     _countdownController.dispose();
-    _flashController.dispose();
     _progressController.dispose();
     _countdown.dispose();
     _intervalCountdown.dispose();
     _captureCount.dispose(); // 촬영 카운트 dispose 추가
-    _isCaptureFlash.dispose();
     _showPreview.dispose();
     _isProcessing.dispose();
-    _flashTimer?.cancel();
     _previewTimer?.cancel();
     super.dispose();
   }
@@ -169,27 +159,6 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen>
                               ),
                             ),
                           ),
-                        );
-                      },
-                    ),
-                    // 촬영 플래시 효과 - ValueListenableBuilder로 깜박임 방지
-                    ValueListenableBuilder<bool>(
-                      valueListenable: _isCaptureFlash,
-                      builder: (context, isFlash, child) {
-                        if (!isFlash) return SizedBox.shrink();
-                        return AnimatedBuilder(
-                          animation: _flashController,
-                          builder: (context, child) {
-                            return Container(
-                              width: double.infinity,
-                              height: double.infinity,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(
-                                    0.95 * (1.0 - _flashController.value)),
-                                borderRadius: BorderRadius.circular(18),
-                              ),
-                            );
-                          },
                         );
                       },
                     ),
@@ -373,7 +342,6 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen>
         _countdown.value = 0;
         _intervalCountdown.value = 0;
         _captureCount.value = 0; // 촬영 카운트 초기화
-        _isCaptureFlash.value = false;
         _showPreview.value = false;
         _previewPhoto = null;
         _isProcessing.value = true;
@@ -388,15 +356,8 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen>
         });
       },
       onPhotoTaken: () {
-        _isCaptureFlash.value = true;
-        _flashController.forward().then((_) {
-          Timer(Duration(milliseconds: 800), () {
-            if (mounted) {
-              _isCaptureFlash.value = false;
-              _flashController.reset();
-            }
-          });
-        });
+        // 플래시 효과 제거됨 - 깜박임 없이 부드러운 촬영
+        print('사진 촬영 완료 (플래시 효과 없음)');
       },
       onPhotoPreview: (photo) {
         _previewPhoto = photo;

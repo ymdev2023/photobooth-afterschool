@@ -70,6 +70,18 @@ class DownloadScreen extends StatelessWidget {
                             ),
                             textAlign: TextAlign.center,
                           ),
+                          if (finalImage != null) ...[
+                            SizedBox(height: 10),
+                            Text(
+                              '🎨 프레임이 적용된 사진이 준비되었습니다!',
+                              style: TextStyle(
+                                fontSize: isWideScreen ? 16 : 14,
+                                color: Colors.pink,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
                           SizedBox(height: 40),
                           Container(
                             padding: EdgeInsets.all(20),
@@ -100,6 +112,42 @@ class DownloadScreen extends StatelessWidget {
                                   ),
                           ),
                           SizedBox(height: 30),
+                          // 최종 이미지 미리보기 추가
+                          if (finalImage != null) ...[
+                            Text(
+                              '완성된 프레임 사진 미리보기',
+                              style: TextStyle(
+                                fontSize: isWideScreen ? 18 : 16,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            SizedBox(height: 10),
+                            Container(
+                              width: isWideScreen ? 200 : 150,
+                              height: (isWideScreen ? 200 : 150) * 1.5,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: Colors.pink.shade300, width: 2),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 5,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.memory(
+                                  finalImage!,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 20),
+                          ],
                           Text(
                             '스마트폰으로 QR코드를 스캔하면\n고화질 사진을 다운로드할 수 있어요!',
                             style: TextStyle(
@@ -133,11 +181,15 @@ class DownloadScreen extends StatelessWidget {
                                 ),
                               ),
                               ElevatedButton.icon(
-                                onPressed: finalImage != null ? _downloadFinalImage : null,
-                                icon: Icon(Icons.photo),
-                                label: Text('사진 다운로드'),
+                                onPressed: finalImage != null
+                                    ? _downloadFinalImage
+                                    : null,
+                                icon: Icon(Icons.download),
+                                label: Text('프레임 사진 다운로드'),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue,
+                                  backgroundColor: finalImage != null
+                                      ? Colors.blue
+                                      : Colors.grey,
                                   foregroundColor: Colors.white,
                                   padding: EdgeInsets.symmetric(
                                     horizontal: isWideScreen ? 25 : 20,
@@ -146,7 +198,7 @@ class DownloadScreen extends StatelessWidget {
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(25),
                                   ),
-                                  elevation: 5,
+                                  elevation: finalImage != null ? 5 : 0,
                                 ),
                               ),
                               ElevatedButton.icon(
@@ -189,9 +241,23 @@ class DownloadScreen extends StatelessWidget {
   /// 최종 프레임 이미지를 다운로드합니다.
   void _downloadFinalImage() {
     if (finalImage != null) {
-      final filename = 'photobooth_final_${DateTime.now().millisecondsSinceEpoch}.png';
-      FrameCompositionService.downloadImage(finalImage!, filename);
-      print('✅ 최종 프레임 이미지 다운로드 시작: $filename');
+      print('📥 다운로드 스크린에서 프레임 이미지 다운로드 시작');
+      print('  이미지 크기: ${finalImage!.length} bytes (${(finalImage!.length / 1024).toStringAsFixed(1)}KB)');
+      
+      final filename = 'photobooth_frame_${DateTime.now().millisecondsSinceEpoch}.png';
+      print('  파일명: $filename');
+      
+      try {
+        FrameCompositionService.downloadImage(finalImage!, filename);
+        print('✅ 프레임 이미지 다운로드 성공: $filename');
+        
+        // 성공 메시지 표시 (브라우저 알림)
+        // 추후 Snackbar나 Toast로 대체 가능
+      } catch (e) {
+        print('❌ 프레임 이미지 다운로드 실패: $e');
+      }
+    } else {
+      print('⚠️ 다운로드할 프레임 이미지가 없습니다');
     }
   }
 }
