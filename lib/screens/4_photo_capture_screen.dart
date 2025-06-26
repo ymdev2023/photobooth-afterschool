@@ -25,18 +25,55 @@ class PhotoCaptureScreen extends StatefulWidget {
   _PhotoCaptureScreenState createState() => _PhotoCaptureScreenState();
 }
 
-class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
-  int _countdown = 0;
-  int _intervalCountdown = 0; // 촬영 간격 카운트다운
-  bool _isCaptureFlash = false; // 촬영 플래시 효과
-  XFile? _previewPhoto; // 촬영 결과 미리보기용
-  bool _showPreview = false; // 미리보기 표시 여부
-  bool _isProcessing = false; // 촬영 완료 후 처리 중
+class _PhotoCaptureScreenState extends State<PhotoCaptureScreen>
+    with TickerProviderStateMixin {
+  // 애니메이션 컨트롤러들
+  late AnimationController _countdownController;
+  late AnimationController _flashController;
+  late AnimationController _progressController;
+  
+  // 상태 관리를 위한 ValueNotifier들 (setState 대신 사용)
+  final ValueNotifier<int> _countdown = ValueNotifier<int>(0);
+  final ValueNotifier<int> _intervalCountdown = ValueNotifier<int>(0);
+  final ValueNotifier<bool> _isCaptureFlash = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> _showPreview = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> _isProcessing = ValueNotifier<bool>(false);
+  
+  XFile? _previewPhoto;
+  Timer? _flashTimer;
+  Timer? _previewTimer;
 
   @override
   void initState() {
     super.initState();
-    // 카메라는 이미 테스트 단계에서 초기화되었음
+    // 애니메이션 컨트롤러 초기화
+    _countdownController = AnimationController(
+      duration: Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _flashController = AnimationController(
+      duration: Duration(milliseconds: 100),
+      vsync: this,
+    );
+    _progressController = AnimationController(
+      duration: Duration(seconds: 1),
+      vsync: this,
+    );
+  }
+
+  @override
+  void dispose() {
+    _countdownController.dispose();
+    _flashController.dispose();
+    _progressController.dispose();
+    _countdown.dispose();
+    _intervalCountdown.dispose();
+    _isCaptureFlash.dispose();
+    _showPreview.dispose();
+    _isProcessing.dispose();
+    _flashTimer?.cancel();
+    _previewTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -90,137 +127,164 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
                         child: _buildCameraContent(),
                       ),
                     ),
-                    // 카운트다운 오버레이
-                    if (_countdown > 0)
-                      Container(
-                        width: double.infinity,
-                        height: double.infinity,
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.7),
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                        child: Center(
-                          child: AnimatedSwitcher(
-                            duration: Duration(milliseconds: 200),
-                            transitionBuilder:
-                                (Widget child, Animation<double> animation) {
-                              return ScaleTransition(
-                                scale: animation,
-                                child: child,
-                              );
-                            },
-                            child: Text(
-                              _countdown.toString(),
-                              key: ValueKey<int>(_countdown),
-                              style: TextStyle(
-                                fontSize: 120,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                shadows: [
-                                  Shadow(
-                                    offset: Offset(2, 2),
-                                    blurRadius: 4,
-                                    color: Colors.black.withOpacity(0.3),
-                                  ),
-                                ],
+                    // 카운트다운 오버레이 - ValueListenableBuilder로 깜박임 방지
+                    ValueListenableBuilder<int>(
+                      valueListenable: _countdown,
+                      builder: (context, countdown, child) {
+                        if (countdown <= 0) return SizedBox.shrink();
+                        return Container(
+                          width: double.infinity,
+                          height: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.7),
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                          child: Center(
+                            child: AnimatedSwitcher(
+                              duration: Duration(milliseconds: 200),
+                              transitionBuilder:
+                                  (Widget child, Animation<double> animation) {
+                                return ScaleTransition(
+                                  scale: animation,
+                                  child: child,
+                                );
+                              },
+                              child: Text(
+                                countdown.toString(),
+                                key: ValueKey<int>(countdown),
+                                style: TextStyle(
+                                  fontSize: 120,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  shadows: [
+                                    Shadow(
+                                      offset: Offset(2, 2),
+                                      blurRadius: 4,
+                                      color: Colors.black.withOpacity(0.3),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ),
-                    // 촬영 플래시 효과
-                    if (_isCaptureFlash)
-                      Container(
-                        width: double.infinity,
-                        height: double.infinity,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.9),
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                      ),
-                    // 촬영 결과 미리보기 오버레이
-                    if (_showPreview && _previewPhoto != null)
-                      Container(
-                        width: double.infinity,
-                        height: double.infinity,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(18),
-                          child: FutureBuilder<Uint8List>(
-                            future: _previewPhoto!.readAsBytes(),
-                            builder: (context, snapshot) {
-                              if (snapshot.hasData) {
-                                return Transform(
-                                  alignment: Alignment.center,
-                                  transform: Matrix4.identity()
-                                    ..scale(-1.0, 1.0), // 좌우반전
-                                  child: Image.memory(
-                                    snapshot.data!,
-                                    fit: BoxFit.cover,
-                                    width: double.infinity,
-                                    height: double.infinity,
-                                  ),
-                                );
-                              } else {
-                                return Container(
-                                  color: Colors.black.withOpacity(0.7),
-                                  child: Center(
-                                    child: CircularProgressIndicator(
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                          Colors.pink),
+                        );
+                      },
+                    ),
+                    // 촬영 플래시 효과 - ValueListenableBuilder로 깜박임 방지
+                    ValueListenableBuilder<bool>(
+                      valueListenable: _isCaptureFlash,
+                      builder: (context, isFlash, child) {
+                        if (!isFlash) return SizedBox.shrink();
+                        return AnimatedBuilder(
+                          animation: _flashController,
+                          builder: (context, child) {
+                            return Container(
+                              width: double.infinity,
+                              height: double.infinity,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(
+                                  0.95 * (1.0 - _flashController.value)
+                                ),
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                    // 촬영 결과 미리보기 오버레이 - ValueListenableBuilder로 깜박임 방지
+                    ValueListenableBuilder<bool>(
+                      valueListenable: _showPreview,
+                      builder: (context, showPreview, child) {
+                        if (!showPreview || _previewPhoto == null) return SizedBox.shrink();
+                        return Container(
+                          width: double.infinity,
+                          height: double.infinity,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(18),
+                            child: FutureBuilder<Uint8List>(
+                              future: _previewPhoto!.readAsBytes(),
+                              builder: (context, snapshot) {
+                                if (snapshot.hasData) {
+                                  return Transform(
+                                    alignment: Alignment.center,
+                                    transform: Matrix4.identity()
+                                      ..scale(-1.0, 1.0), // 좌우반전
+                                    child: Image.memory(
+                                      snapshot.data!,
+                                      fit: BoxFit.cover,
+                                      width: double.infinity,
+                                      height: double.infinity,
                                     ),
+                                  );
+                                } else {
+                                  return Container(
+                                    color: Colors.black.withOpacity(0.7),
+                                    child: Center(
+                                      child: CircularProgressIndicator(
+                                        valueColor: AlwaysStoppedAnimation<Color>(
+                                            Colors.pink),
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    // 촬영 완료 후 로딩 화면 - ValueListenableBuilder로 깜박임 방지
+                    ValueListenableBuilder<bool>(
+                      valueListenable: _isProcessing,
+                      builder: (context, isProcessing, child) {
+                        if (!isProcessing) return SizedBox.shrink();
+                        return Container(
+                          width: double.infinity,
+                          height: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.8),
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  width: 60,
+                                  height: 60,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 4,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.pink),
                                   ),
-                                );
-                              }
-                            },
+                                ),
+                                SizedBox(height: 30),
+                                Text(
+                                  '멋진 사진들이 완성되었습니다!',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                SizedBox(height: 10),
+                                Text(
+                                  '사진을 처리하고 있습니다...',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ),
-                    // 촬영 완료 후 로딩 화면
-                    if (_isProcessing)
-                      Container(
-                        width: double.infinity,
-                        height: double.infinity,
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.8),
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              SizedBox(
-                                width: 60,
-                                height: 60,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 4,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.pink),
-                                ),
-                              ),
-                              SizedBox(height: 30),
-                              Text(
-                                '멋진 사진들이 완성되었습니다!',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              SizedBox(height: 10),
-                              Text(
-                                '사진을 처리하고 있습니다...',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -275,63 +339,49 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
   void _startCapture() {
     widget.cameraService.startContinuousCapture(
       onCountdownUpdate: (countdown) {
-        if (_countdown != countdown) {
-          setState(() {
-            _countdown = countdown;
-          });
+        if (_countdown.value != countdown) {
+          _countdown.value = countdown;
         }
       },
       onIntervalUpdate: (intervalCountdown) {
-        if (_intervalCountdown != intervalCountdown) {
-          setState(() {
-            _intervalCountdown = intervalCountdown;
-          });
+        if (_intervalCountdown.value != intervalCountdown) {
+          _intervalCountdown.value = intervalCountdown;
         }
       },
       onCaptureComplete: () {
-        setState(() {
-          _countdown = 0;
-          _intervalCountdown = 0;
-          _isCaptureFlash = false;
-          _showPreview = false;
-          _previewPhoto = null;
-          _isProcessing = true;
-        });
+        _countdown.value = 0;
+        _intervalCountdown.value = 0;
+        _isCaptureFlash.value = false;
+        _showPreview.value = false;
+        _previewPhoto = null;
+        _isProcessing.value = true;
 
         // 3초 후 다음 화면으로 이동
         Timer(Duration(seconds: 3), () {
           if (mounted) {
-            setState(() {
-              _isProcessing = false;
-            });
+            _isProcessing.value = false;
             widget.onNext();
           }
         });
       },
       onPhotoTaken: () {
-        setState(() {
-          _isCaptureFlash = true;
-        });
-
-        Timer(Duration(seconds: 1), () {
-          if (mounted) {
-            setState(() {
-              _isCaptureFlash = false;
-            });
-          }
+        _isCaptureFlash.value = true;
+        _flashController.forward().then((_) {
+          Timer(Duration(milliseconds: 800), () {
+            if (mounted) {
+              _isCaptureFlash.value = false;
+              _flashController.reset();
+            }
+          });
         });
       },
       onPhotoPreview: (photo) {
-        setState(() {
-          _previewPhoto = photo;
-          _showPreview = true;
-        });
+        _previewPhoto = photo;
+        _showPreview.value = true;
 
         Timer(Duration(seconds: 1), () {
           if (mounted) {
-            setState(() {
-              _showPreview = false;
-            });
+            _showPreview.value = false;
           }
         });
       },
@@ -417,46 +467,52 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
               color: Colors.white,
             ),
           ),
-          // 촬영 진행 상태 표시
+          // 촬영 진행 상태 표시 - ValueListenableBuilder로 깜박임 방지
           Container(
             width: 60,
             height: 60,
-            child: widget.cameraService.isCapturing && _intervalCountdown > 0
-                ? Container(
-                    decoration: BoxDecoration(
-                      color: Colors.pink.withOpacity(0.8),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.8),
-                        width: 2,
+            child: ValueListenableBuilder<int>(
+              valueListenable: _intervalCountdown,
+              builder: (context, intervalCountdown, child) {
+                if (!widget.cameraService.isCapturing || intervalCountdown <= 0) {
+                  return SizedBox.shrink();
+                }
+                return Container(
+                  decoration: BoxDecoration(
+                    color: Colors.pink.withOpacity(0.8),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.8),
+                      width: 2,
+                    ),
+                  ),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      SizedBox(
+                        width: 45,
+                        height: 45,
+                        child: CircularProgressIndicator(
+                          value: intervalCountdown / 10.0,
+                          strokeWidth: 3,
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
+                          backgroundColor: Colors.white.withOpacity(0.3),
+                        ),
                       ),
-                    ),
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        SizedBox(
-                          width: 45,
-                          height: 45,
-                          child: CircularProgressIndicator(
-                            value: (_intervalCountdown) / 10.0,
-                            strokeWidth: 3,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
-                            backgroundColor: Colors.white.withOpacity(0.3),
-                          ),
+                      Text(
+                        intervalCountdown.toString(),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                         ),
-                        Text(
-                          _intervalCountdown.toString(),
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : SizedBox.shrink(),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),

@@ -108,40 +108,36 @@ class _CameraTestScreenState extends State<CameraTestScreen> {
             ),
             SizedBox(height: 30),
             // 컨트롤 버튼들
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                // 테스트 완료 버튼
-                ElevatedButton(
-                  onPressed: widget.cameraService.isWebCameraInitialized
-                      ? _completeTest
-                      : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        _testCompleted ? Colors.green : Colors.blue,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25),
-                    ),
-                    elevation: 5,
+            Center(
+              child: ElevatedButton(
+                onPressed: widget.cameraService.isWebCameraInitialized
+                    ? _completeTest
+                    : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor:
+                      _testCompleted ? Colors.green : Colors.blue,
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(25),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(_testCompleted
-                          ? Icons.check_circle
-                          : Icons.visibility),
-                      SizedBox(width: 8),
-                      Text(
-                        _testCompleted ? '테스트 완료!' : '화면 확인 완료',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
+                  elevation: 5,
                 ),
-              ],
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(_testCompleted
+                        ? Icons.check_circle
+                        : Icons.visibility),
+                    SizedBox(width: 8),
+                    Text(
+                      _testCompleted ? '테스트 완료!' : '화면 확인 완료',
+                      style: TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
             ),
             SizedBox(height: 20),
             CommonWidgets.buildNavigationButtons(
