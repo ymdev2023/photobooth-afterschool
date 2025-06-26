@@ -8,8 +8,8 @@ class FrameCompositionService {
   static Future<Uint8List> composeWithFrame({
     required List<XFile> photos,
     required String frameType,
-    int width = 800,
-    int height = 600, // 4:3 비율 (800x600)
+    int width = 400,
+    int height = 4000, // 1:10 비율 (400x4000)
   }) async {
     try {
       print('🎨 프레임 합성 시작: $frameType, 사진 ${photos.length}장');

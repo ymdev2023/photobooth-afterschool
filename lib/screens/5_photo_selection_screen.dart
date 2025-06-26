@@ -315,7 +315,7 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen> {
         crossAxisCount: crossAxisCount,
         crossAxisSpacing: 15,
         mainAxisSpacing: 15,
-        childAspectRatio: 4 / 3, // 4:3 비율로 변경
+        childAspectRatio: 1 / 10, // 1:10 비율로 변경
       ),
       itemCount: widget.capturedPhotos.length,
       itemBuilder: (context, index) {
@@ -488,7 +488,7 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen> {
           SizedBox(height: 15),
           Expanded(
             child: AspectRatio(
-              aspectRatio: 4 / 3, // 4:3 비율 강제 적용
+              aspectRatio: 1 / 10, // 1:10 비율로 변경 (세로로 긴 형태)
               child: _selectedPhotos.length ==
                       _getRequiredPhotoCount(widget.selectedFrame)
                   ? _buildCompletePreview()
@@ -506,8 +506,8 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen> {
       future: FrameCompositionService.composeWithFrame(
         photos: _selectedPhotos,
         frameType: widget.selectedFrame ?? 'classic_4cut',
-        width: 600,
-        height: 450, // 정확한 4:3 비율 (600x450)
+        width: 400,
+        height: 4000, // 1:10 비율 (400x4000)
       ),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
@@ -568,7 +568,7 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen> {
     final positions = FrameCompositionService.getPhotoPositions(
       widget.selectedFrame ?? 'classic_4cut',
       400,
-      600,
+      4000, // 1:10 비율
     );
 
     return Container(
