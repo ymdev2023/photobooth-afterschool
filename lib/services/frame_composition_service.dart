@@ -9,7 +9,7 @@ class FrameCompositionService {
     required List<XFile> photos,
     required String frameType,
     int width = 800,
-    int height = 1200,
+    int height = 600, // 4:3 비율로 조정 (800x600)
   }) async {
     try {
       print('🎨 프레임 합성 시작: $frameType, 사진 ${photos.length}장');

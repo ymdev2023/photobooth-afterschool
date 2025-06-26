@@ -315,7 +315,7 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen> {
         crossAxisCount: crossAxisCount,
         crossAxisSpacing: 15,
         mainAxisSpacing: 15,
-        childAspectRatio: 0.8,
+        childAspectRatio: 4 / 3, // 4:3 비율로 변경
       ),
       itemCount: widget.capturedPhotos.length,
       itemBuilder: (context, index) {
@@ -490,22 +490,6 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen> {
                 ? _buildCompletePreview()
                 : _buildIncompletePreview(),
           ),
-          SizedBox(height: 15),
-          if (_selectedPhotos.length ==
-              _getRequiredPhotoCount(widget.selectedFrame))
-            ElevatedButton.icon(
-              onPressed: _generateAndDownloadFrame,
-              icon: Icon(Icons.download),
-              label: Text('프레임 다운로드'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-            ),
         ],
       ),
     );
@@ -518,7 +502,7 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen> {
         photos: _selectedPhotos,
         frameType: widget.selectedFrame ?? 'classic_4cut',
         width: 400,
-        height: 600,
+        height: 300, // 4:3 비율로 조정 (400x300)
       ),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
@@ -673,38 +657,4 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen> {
   }
 
   /// 프레임을 생성하고 다운로드합니다.
-  Future<void> _generateAndDownloadFrame() async {
-    try {
-      print('🎨 프레임 생성 및 다운로드 시작');
-
-      final frameBytes = await FrameCompositionService.composeWithFrame(
-        photos: _selectedPhotos,
-        frameType: widget.selectedFrame ?? 'classic_4cut',
-        width: 800,
-        height: 1200,
-      );
-
-      final filename =
-          'photobooth_frame_${DateTime.now().millisecondsSinceEpoch}.png';
-      FrameCompositionService.downloadImage(frameBytes, filename);
-
-      // 성공 메시지 표시
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('✅ 프레임 이미지가 다운로드되었습니다!'),
-          backgroundColor: Colors.green,
-          duration: Duration(seconds: 3),
-        ),
-      );
-    } catch (e) {
-      print('❌ 프레임 다운로드 실패: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('❌ 프레임 생성에 실패했습니다: $e'),
-          backgroundColor: Colors.red,
-          duration: Duration(seconds: 3),
-        ),
-      );
-    }
-  }
 }

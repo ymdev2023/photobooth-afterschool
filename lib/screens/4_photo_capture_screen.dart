@@ -183,7 +183,7 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen>
                                   return Container(
                                     child: Center(
                                       child: AspectRatio(
-                                        aspectRatio: 1.0, // 정방형 비율
+                                        aspectRatio: 4 / 3, // 4:3 비율로 변경
                                         child: Transform(
                                           alignment: Alignment.center,
                                           transform: Matrix4.identity()
@@ -191,7 +191,7 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen>
                                           child: Image.memory(
                                             snapshot.data!,
                                             fit: BoxFit
-                                                .cover, // 정방형 영역 내에서 cover
+                                                .cover, // 4:3 영역 내에서 cover
                                           ),
                                         ),
                                       ),

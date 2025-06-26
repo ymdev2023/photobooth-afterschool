@@ -129,7 +129,8 @@ class DownloadScreen extends StatelessWidget {
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: Colors.pink.shade300, width: 2),
+                                border: Border.all(
+                                    color: Colors.pink.shade300, width: 2),
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.black.withOpacity(0.1),
@@ -242,15 +243,17 @@ class DownloadScreen extends StatelessWidget {
   void _downloadFinalImage() {
     if (finalImage != null) {
       print('📥 다운로드 스크린에서 프레임 이미지 다운로드 시작');
-      print('  이미지 크기: ${finalImage!.length} bytes (${(finalImage!.length / 1024).toStringAsFixed(1)}KB)');
-      
-      final filename = 'photobooth_frame_${DateTime.now().millisecondsSinceEpoch}.png';
+      print(
+          '  이미지 크기: ${finalImage!.length} bytes (${(finalImage!.length / 1024).toStringAsFixed(1)}KB)');
+
+      final filename =
+          'photobooth_frame_${DateTime.now().millisecondsSinceEpoch}.png';
       print('  파일명: $filename');
-      
+
       try {
         FrameCompositionService.downloadImage(finalImage!, filename);
         print('✅ 프레임 이미지 다운로드 성공: $filename');
-        
+
         // 성공 메시지 표시 (브라우저 알림)
         // 추후 Snackbar나 Toast로 대체 가능
       } catch (e) {

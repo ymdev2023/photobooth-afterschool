@@ -176,7 +176,7 @@ class ReviewScreen extends StatelessWidget {
     if (filteredImage != null) {
       print('  filteredImage 크기: ${filteredImage!.length} bytes');
     }
-    
+
     if (filteredImage != null) {
       return Container(
         child: Column(
