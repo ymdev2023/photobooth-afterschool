@@ -509,30 +509,37 @@ class _FilterSelectionScreenState extends State<FilterSelectionScreen> {
 
   Future<Uint8List> _generateFilteredImage() async {
     try {
-      print('필터링된 이미지 생성 시작');
+      print('📸 프레임이 적용된 최종 이미지 생성 시작');
       print('선택된 프레임: ${widget.selectedFrame}');
       print('선택된 필터: ${widget.selectedFilter}');
       print('선택된 사진 수: ${widget.selectedPhotos.length}');
 
-      // 프레임 정보 확인 (나중에 사용)
-      if (widget.selectedFrame != null && widget.selectedFrame != 'None') {
-        print('프레임이 선택됨: ${widget.selectedFrame}');
+      // 웹에서는 복잡한 Canvas 작업 대신 간단한 방법 사용
+      // 현재는 프레임 미리보기가 제대로 보이고 있으므로
+      // 임시로 모든 사진을 하나의 collage 형태로 만들어보겠습니다
+
+      if (widget.selectedPhotos.isEmpty) {
+        throw Exception('선택된 사진이 없습니다');
       }
 
-      // 첫 번째 사진 로드 (임시로 단일 사진 처리)
+      // 우선 첫 번째 사진을 기본으로 반환하되
+      // 나중에 실제 프레임 조합 기능을 추가할 예정
       final firstPhoto = widget.selectedPhotos.first;
       final photoBytes = await firstPhoto.readAsBytes();
 
-      // 필터가 적용된 이미지를 반환
-      // 실제 구현에서는 Canvas를 사용해서 프레임과 사진을 합성해야 하지만
-      // 지금은 간단히 사진만 반환
-      print('필터링된 이미지 생성 완료');
+      print('✅ 임시 이미지 생성 완료 (첫 번째 사진), 크기: ${photoBytes.length} bytes');
+      print('⚠️ 주의: 현재는 프레임 조합이 아닌 첫 번째 사진만 반환 중입니다');
+      print('    추후 Canvas를 사용한 실제 프레임 조합 기능을 구현할 예정입니다');
+
       return photoBytes;
     } catch (e) {
-      print('필터링된 이미지 생성 중 오류: $e');
+      print('❌ 이미지 생성 중 오류: $e');
       // 오류 발생 시 첫 번째 사진 반환
-      final firstPhoto = widget.selectedPhotos.first;
-      return await firstPhoto.readAsBytes();
+      if (widget.selectedPhotos.isNotEmpty) {
+        final firstPhoto = widget.selectedPhotos.first;
+        return await firstPhoto.readAsBytes();
+      }
+      throw e;
     }
   }
 }

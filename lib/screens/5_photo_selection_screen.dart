@@ -40,15 +40,15 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen> {
     print('전달받은 촬영 사진 수: ${widget.capturedPhotos.length}');
     print('기존에 선택된 사진 수: ${widget.selectedPhotos.length}');
     print('선택된 프레임: ${widget.selectedFrame}');
-    
+
     for (int i = 0; i < widget.capturedPhotos.length; i++) {
       print('  촬영 사진 ${i + 1}: ${widget.capturedPhotos[i].name}');
     }
-    
+
     if (widget.capturedPhotos.isEmpty) {
       print('⚠️ 경고: 촬영된 사진이 없습니다!');
     }
-    
+
     // 필요한 사진 수 확인
     int requiredCount = _getRequiredPhotoCount(widget.selectedFrame);
     print('필요한 사진 수: $requiredCount');
@@ -156,8 +156,10 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen> {
 
                               return GestureDetector(
                                 onTap: () {
-                                  print('🖱️ 사진 탭됨: index=$index, name=${photo.name}');
-                                  _togglePhotoSelection(photo, requiredPhotoCount);
+                                  print(
+                                      '🖱️ 사진 탭됨: index=$index, name=${photo.name}');
+                                  _togglePhotoSelection(
+                                      photo, requiredPhotoCount);
                                 },
                                 child: Container(
                                   decoration: BoxDecoration(
@@ -194,7 +196,8 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen> {
                                             future: photo.readAsBytes(),
                                             builder: (context, snapshot) {
                                               if (snapshot.hasData) {
-                                                print('✅ 사진 로드 완료: ${photo.name}, 크기: ${snapshot.data!.length} bytes');
+                                                print(
+                                                    '✅ 사진 로드 완료: ${photo.name}, 크기: ${snapshot.data!.length} bytes');
                                                 return Image.memory(
                                                   snapshot.data!,
                                                   fit: BoxFit.cover,
@@ -202,7 +205,8 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen> {
                                                   height: double.infinity,
                                                 );
                                               } else if (snapshot.hasError) {
-                                                print('❌ 사진 로드 에러: ${photo.name}, 에러: ${snapshot.error}');
+                                                print(
+                                                    '❌ 사진 로드 에러: ${photo.name}, 에러: ${snapshot.error}');
                                                 return Container(
                                                   color: Colors.red.shade200,
                                                   child: Center(
@@ -348,7 +352,7 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen> {
     print('현재 선택된 사진 수: ${_selectedPhotos.length}');
     print('필요한 사진 수: $requiredCount');
     print('이미 선택되어 있는가? ${_selectedPhotos.contains(photo)}');
-    
+
     setState(() {
       if (_selectedPhotos.contains(photo)) {
         _selectedPhotos.remove(photo);
@@ -363,7 +367,7 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen> {
         print('✅ 사진 교체: ${removedPhoto.name} -> ${photo.name}');
       }
       print('📊 현재 선택된 사진 수: ${_selectedPhotos.length}/$requiredCount');
-      
+
       // 선택된 사진 목록 출력
       print('📋 선택된 사진 목록:');
       for (int i = 0; i < _selectedPhotos.length; i++) {

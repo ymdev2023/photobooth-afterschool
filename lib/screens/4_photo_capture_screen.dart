@@ -356,7 +356,7 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen>
         for (int i = 0; i < capturedPhotos.length; i++) {
           print('  촬영 사진 ${i + 1}: ${capturedPhotos[i].name}');
         }
-        
+
         _countdown.value = 0;
         _intervalCountdown.value = 0;
         _isCaptureFlash.value = false;
