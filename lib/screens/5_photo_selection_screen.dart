@@ -326,7 +326,9 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen> {
         return GestureDetector(
           onTap: () {
             print('🖱️ 사진 탭됨: index=$index, name=${photo.name}');
+            print('탭 이벤트 처리 시작');
             _togglePhotoSelection(photo, requiredPhotoCount);
+            print('탭 이벤트 처리 완료');
           },
           child: Container(
             decoration: BoxDecoration(
@@ -485,10 +487,13 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen> {
           ),
           SizedBox(height: 15),
           Expanded(
-            child: _selectedPhotos.length ==
-                    _getRequiredPhotoCount(widget.selectedFrame)
-                ? _buildCompletePreview()
-                : _buildIncompletePreview(),
+            child: AspectRatio(
+              aspectRatio: 4 / 3, // 4:3 비율 강제 적용
+              child: _selectedPhotos.length ==
+                      _getRequiredPhotoCount(widget.selectedFrame)
+                  ? _buildCompletePreview()
+                  : _buildIncompletePreview(),
+            ),
           ),
         ],
       ),
@@ -501,8 +506,8 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen> {
       future: FrameCompositionService.composeWithFrame(
         photos: _selectedPhotos,
         frameType: widget.selectedFrame ?? 'classic_4cut',
-        width: 400,
-        height: 300, // 4:3 비율로 조정 (400x300)
+        width: 600,
+        height: 450, // 정확한 4:3 비율 (600x450)
       ),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
