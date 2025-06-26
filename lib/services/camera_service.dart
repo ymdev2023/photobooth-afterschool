@@ -20,7 +20,7 @@ class CameraService {
   bool _isCapturing = false;
   int _captureCount = 0;
   int _captureCountdown = 0;
-  int _intervalCountdown = 0; // 촬영 간격 카운트다운 (10초)
+  int _intervalCountdown = 0; // 촬영 간격 카운트다운 (5초)
   Timer? _captureTimer;
   Timer? _countdownTimer;
   Timer? _intervalTimer; // 촬영 간격 타이머
@@ -176,9 +176,9 @@ class CameraService {
     onPhotoTaken?.call(); // 촬영 완료 알림
     print('촬영 완료: ${_captureCount}/8');
 
-    // 나머지 사진들을 10초 간격으로 촬영
+    // 나머지 사진들을 5초 간격으로 촬영
     if (_captureCount < 8) {
-      _intervalCountdown = 10; // 10초 간격 설정
+      _intervalCountdown = 5; // 5초 간격 설정
 
       // 1초마다 간격 카운트다운 업데이트
       _intervalTimer = Timer.periodic(Duration(seconds: 1), (timer) {
@@ -191,7 +191,7 @@ class CameraService {
       });
     }
 
-    _captureTimer = Timer.periodic(Duration(seconds: 10), (timer) async {
+    _captureTimer = Timer.periodic(Duration(seconds: 5), (timer) async {
       if (_captureCount < 8) {
         XFile? capturedPhoto = await _capturePhoto();
         _captureCount++;
@@ -208,7 +208,7 @@ class CameraService {
 
         // 다음 촬영을 위한 간격 타이머 재시작
         if (_captureCount < 8) {
-          _intervalCountdown = 10;
+          _intervalCountdown = 5;
           _intervalTimer?.cancel();
           _intervalTimer =
               Timer.periodic(Duration(seconds: 1), (intervalTimer) {

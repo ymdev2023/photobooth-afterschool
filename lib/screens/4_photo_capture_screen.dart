@@ -209,15 +209,20 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen>
                               future: _previewPhoto!.readAsBytes(),
                               builder: (context, snapshot) {
                                 if (snapshot.hasData) {
-                                  return Transform(
-                                    alignment: Alignment.center,
-                                    transform: Matrix4.identity()
-                                      ..scale(-1.0, 1.0), // 좌우반전
-                                    child: Image.memory(
-                                      snapshot.data!,
-                                      fit: BoxFit.cover,
-                                      width: double.infinity,
-                                      height: double.infinity,
+                                  return Container(
+                                    child: Center(
+                                      child: AspectRatio(
+                                        aspectRatio: 1.0, // 정방형 비율
+                                        child: Transform(
+                                          alignment: Alignment.center,
+                                          transform: Matrix4.identity()
+                                            ..scale(-1.0, 1.0), // 좌우반전
+                                          child: Image.memory(
+                                            snapshot.data!,
+                                            fit: BoxFit.cover, // 정방형 영역 내에서 cover
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   );
                                 } else {
