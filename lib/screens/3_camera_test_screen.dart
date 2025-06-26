@@ -114,8 +114,7 @@ class _CameraTestScreenState extends State<CameraTestScreen> {
                     ? _completeTest
                     : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      _testCompleted ? Colors.green : Colors.blue,
+                  backgroundColor: _testCompleted ? Colors.green : Colors.blue,
                   foregroundColor: Colors.white,
                   padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                   shape: RoundedRectangleBorder(
@@ -126,14 +125,13 @@ class _CameraTestScreenState extends State<CameraTestScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(_testCompleted
-                        ? Icons.check_circle
-                        : Icons.visibility),
+                    Icon(
+                        _testCompleted ? Icons.check_circle : Icons.visibility),
                     SizedBox(width: 8),
                     Text(
                       _testCompleted ? '테스트 완료!' : '화면 확인 완료',
-                      style: TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),

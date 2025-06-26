@@ -135,7 +135,7 @@ class WelcomeScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'v2.3.0 (2025.06.26)',
+                            'v2.4.0 (2025.06.26)',
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -153,7 +153,7 @@ class WelcomeScreen extends StatelessWidget {
                           ),
                           SizedBox(height: 4),
                           Text(
-                            '• 카메라 테스트와 사진 촬영 화면 분리\n• 카메라 테스트: 얼굴 전체 확인 가능 (contain 모드)\n• 실제 촬영: 전용 화면으로 사용성 개선\n• 파일명에 숫자 접두어로 진행 순서 명확화\n• 8단계 워크플로우로 체계적인 사용자 경험',
+                            '• 화면 깜박임 문제 근본적 해결\n• ValueNotifier와 ValueListenableBuilder로 성능 최적화\n• 촬영 타이머 및 플래시 효과 부드럽게 개선\n• setState() 제거로 불필요한 리빌드 방지\n• 자연스러운 촬영 진행 상태 표시',
                             style: TextStyle(
                               color: Colors.white60,
                               fontSize: isWideScreen ? 13 : 11,

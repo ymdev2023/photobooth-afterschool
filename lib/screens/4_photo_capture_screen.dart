@@ -31,14 +31,14 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen>
   late AnimationController _countdownController;
   late AnimationController _flashController;
   late AnimationController _progressController;
-  
+
   // 상태 관리를 위한 ValueNotifier들 (setState 대신 사용)
   final ValueNotifier<int> _countdown = ValueNotifier<int>(0);
   final ValueNotifier<int> _intervalCountdown = ValueNotifier<int>(0);
   final ValueNotifier<bool> _isCaptureFlash = ValueNotifier<bool>(false);
   final ValueNotifier<bool> _showPreview = ValueNotifier<bool>(false);
   final ValueNotifier<bool> _isProcessing = ValueNotifier<bool>(false);
-  
+
   XFile? _previewPhoto;
   Timer? _flashTimer;
   Timer? _previewTimer;
@@ -183,8 +183,7 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen>
                               height: double.infinity,
                               decoration: BoxDecoration(
                                 color: Colors.white.withOpacity(
-                                  0.95 * (1.0 - _flashController.value)
-                                ),
+                                    0.95 * (1.0 - _flashController.value)),
                                 borderRadius: BorderRadius.circular(18),
                               ),
                             );
@@ -196,7 +195,8 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen>
                     ValueListenableBuilder<bool>(
                       valueListenable: _showPreview,
                       builder: (context, showPreview, child) {
-                        if (!showPreview || _previewPhoto == null) return SizedBox.shrink();
+                        if (!showPreview || _previewPhoto == null)
+                          return SizedBox.shrink();
                         return Container(
                           width: double.infinity,
                           height: double.infinity,
@@ -225,8 +225,9 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen>
                                     color: Colors.black.withOpacity(0.7),
                                     child: Center(
                                       child: CircularProgressIndicator(
-                                        valueColor: AlwaysStoppedAnimation<Color>(
-                                            Colors.pink),
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                                Colors.pink),
                                       ),
                                     ),
                                   );
@@ -474,7 +475,8 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen>
             child: ValueListenableBuilder<int>(
               valueListenable: _intervalCountdown,
               builder: (context, intervalCountdown, child) {
-                if (!widget.cameraService.isCapturing || intervalCountdown <= 0) {
+                if (!widget.cameraService.isCapturing ||
+                    intervalCountdown <= 0) {
                   return SizedBox.shrink();
                 }
                 return Container(
