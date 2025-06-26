@@ -25,6 +25,12 @@ class CameraService {
   Timer? _countdownTimer;
   Timer? _intervalTimer; // 촬영 간격 타이머
 
+  // 영상 녹화 관련 변수들
+  html.MediaRecorder? _mediaRecorder;
+  List<html.Blob> _recordedChunks = [];
+  bool _isRecording = false;
+  String? _recordedVideoUrl;
+
   // Getters
   bool get isWebCameraInitialized => _isWebCameraInitialized;
   bool get isCapturing => _isCapturing;
@@ -32,6 +38,8 @@ class CameraService {
   int get captureCountdown => _captureCountdown;
   int get intervalCountdown => _intervalCountdown; // 촬영 간격 카운트다운 getter
   html.MediaStream? get mediaStream => _mediaStream;
+  bool get isRecording => _isRecording;
+  String? get recordedVideoUrl => _recordedVideoUrl;
 
   List<XFile> getCapturedPhotos() {
     return List.from(_capturedPhotos);
@@ -131,7 +139,10 @@ class CameraService {
     _captureCountdown = 5;
     _intervalCountdown = 0;
 
-    print('연속 촬영 시작 - 총 8장 촬영');
+    // 영상 녹화 시작
+    startVideoRecording();
+
+    print('연속 촬영 및 영상 녹화 시작 - 총 8장 촬영');
 
     _countdownTimer = Timer.periodic(Duration(seconds: 1), (timer) {
       if (_captureCountdown > 0) {
@@ -213,7 +224,11 @@ class CameraService {
         timer.cancel();
         _intervalTimer?.cancel();
         _isCapturing = false;
-        print('8장 촬영 완료! 저장된 사진들:');
+
+        // 영상 녹화 중지
+        stopVideoRecording();
+
+        print('8장 촬영 및 영상 녹화 완료! 저장된 사진들:');
         for (int i = 0; i < _capturedPhotos.length; i++) {
           print('  ${i + 1}. ${_capturedPhotos[i].name}');
         }
@@ -261,10 +276,132 @@ class CameraService {
     }
   }
 
-  void stopCapture() {
-    _captureTimer?.cancel();
-    _countdownTimer?.cancel();
-    _intervalTimer?.cancel();
-    _isCapturing = false;
+  // 영상 녹화 시작
+  void startVideoRecording() {
+    if (_mediaStream == null || _isRecording) {
+      print('영상 녹화 시작 실패: 스트림이 없거나 이미 녹화 중');
+      return;
+    }
+
+    try {
+      // 지원되는 MIME 타입 확인
+      List<String> mimeTypes = [
+        'video/webm;codecs=vp9',
+        'video/webm;codecs=vp8',
+        'video/webm',
+        'video/mp4'
+      ];
+
+      String? supportedMimeType;
+      for (String mimeType in mimeTypes) {
+        if (html.MediaRecorder.isTypeSupported(mimeType)) {
+          supportedMimeType = mimeType;
+          break;
+        }
+      }
+
+      if (supportedMimeType == null) {
+        print('지원되는 비디오 형식이 없습니다.');
+        return;
+      }
+
+      // MediaRecorder 생성
+      _mediaRecorder = html.MediaRecorder(_mediaStream!, {
+        'mimeType': supportedMimeType,
+        'videoBitsPerSecond': 2500000, // 2.5 Mbps
+      });
+
+      _recordedChunks.clear();
+
+      // 데이터 이벤트 리스너
+      _mediaRecorder!.addEventListener('dataavailable', (html.Event event) {
+        final blobEvent = event as html.BlobEvent;
+        if (blobEvent.data!.size > 0) {
+          _recordedChunks.add(blobEvent.data!);
+        }
+      });
+
+      // 녹화 중지 이벤트 리스너
+      _mediaRecorder!.addEventListener('stop', (html.Event event) {
+        _createVideoUrl();
+      });
+
+      // 녹화 시작
+      _mediaRecorder!.start(1000); // 1초마다 데이터 이벤트 발생
+      _isRecording = true;
+      print('영상 녹화 시작됨 (${supportedMimeType})');
+    } catch (e) {
+      print('영상 녹화 시작 실패: $e');
+    }
+  }
+
+  // 영상 녹화 중지
+  void stopVideoRecording() {
+    if (_mediaRecorder == null || !_isRecording) {
+      print('영상 녹화 중지 실패: 녹화 중이 아님');
+      return;
+    }
+
+    try {
+      _mediaRecorder!.stop();
+      _isRecording = false;
+      print('영상 녹화 중지됨');
+    } catch (e) {
+      print('영상 녹화 중지 실패: $e');
+    }
+  }
+
+  // 녹화된 영상 URL 생성
+  void _createVideoUrl() {
+    if (_recordedChunks.isEmpty) {
+      print('녹화된 데이터가 없습니다.');
+      return;
+    }
+
+    try {
+      final blob = html.Blob(_recordedChunks, 'video/webm');
+      _recordedVideoUrl = html.Url.createObjectUrl(blob);
+      print('영상 URL 생성됨: $_recordedVideoUrl');
+      print('영상 크기: ${blob.size} bytes');
+    } catch (e) {
+      print('영상 URL 생성 실패: $e');
+    }
+  }
+
+  // 영상 다운로드
+  void downloadVideo() {
+    if (_recordedVideoUrl == null) {
+      print('다운로드할 영상이 없습니다.');
+      return;
+    }
+
+    try {
+      final anchor = html.document.createElement('a') as html.AnchorElement;
+      anchor.href = _recordedVideoUrl!;
+      anchor.download =
+          'photobooth_video_${DateTime.now().millisecondsSinceEpoch}.webm';
+      anchor.click();
+      print('영상 다운로드 시작');
+    } catch (e) {
+      print('영상 다운로드 실패: $e');
+    }
+  }
+
+  // 리소스 정리
+  void dispose() {
+    disposeWebCamera();
+
+    // 영상 녹화 정리
+    if (_isRecording) {
+      stopVideoRecording();
+    }
+
+    if (_recordedVideoUrl != null) {
+      html.Url.revokeObjectUrl(_recordedVideoUrl!);
+      _recordedVideoUrl = null;
+    }
+
+    _recordedChunks.clear();
+    _mediaRecorder = null;
   }
 }

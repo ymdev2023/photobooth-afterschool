@@ -3,13 +3,17 @@ import 'package:qr_flutter/qr_flutter.dart';
 
 class DownloadScreen extends StatelessWidget {
   final String? downloadUrl;
+  final String? videoUrl;
   final VoidCallback onRestart;
+  final VoidCallback? onVideoDownload;
   final String currentStep;
 
   const DownloadScreen({
     Key? key,
     required this.downloadUrl,
+    this.videoUrl,
     required this.onRestart,
+    this.onVideoDownload,
     required this.currentStep,
   }) : super(key: key);
 
@@ -84,7 +88,8 @@ class DownloadScreen extends StatelessWidget {
                                     gapless: false,
                                   )
                                 : QrImageView(
-                                    data: 'https://photobooth-afterschool.pages.dev/download',
+                                    data:
+                                        'https://photobooth-afterschool.pages.dev/download',
                                     version: QrVersions.auto,
                                     size: qrSize,
                                     gapless: false,
@@ -143,13 +148,16 @@ class DownloadScreen extends StatelessWidget {
                                 ),
                               ),
                               ElevatedButton.icon(
-                                onPressed: () {
-                                  // TODO: 영상 다운로드 기능 구현
-                                },
+                                onPressed:
+                                    videoUrl != null && onVideoDownload != null
+                                        ? onVideoDownload
+                                        : null,
                                 icon: Icon(Icons.videocam),
                                 label: Text('영상 다운로드'),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green,
+                                  backgroundColor: videoUrl != null
+                                      ? Colors.green
+                                      : Colors.grey,
                                   foregroundColor: Colors.white,
                                   padding: EdgeInsets.symmetric(
                                     horizontal: isWideScreen ? 25 : 20,
@@ -158,7 +166,7 @@ class DownloadScreen extends StatelessWidget {
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(25),
                                   ),
-                                  elevation: 5,
+                                  elevation: videoUrl != null ? 5 : 0,
                                 ),
                               ),
                             ],

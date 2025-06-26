@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'models/photo_booth_step.dart';
-import 'screens/welcome_screen.dart';
-import 'screens/frame_selection_screen.dart';
-import 'screens/photo_capture_screen.dart';
-import 'screens/photo_selection_screen.dart';
-import 'screens/filter_selection_screen.dart';
-import 'screens/review_screen.dart';
-import 'screens/download_screen.dart';
+import 'screens/1_welcome_screen.dart';
+import 'screens/2_frame_selection_screen.dart';
+import 'screens/3_camera_test_screen.dart';
+import 'screens/4_photo_capture_screen.dart';
+import 'screens/5_photo_selection_screen.dart';
+import 'screens/6_filter_selection_screen.dart';
+import 'screens/7_review_screen.dart';
+import 'screens/8_download_screen.dart';
 import 'services/camera_service.dart';
 import 'dart:typed_data';
 
@@ -64,6 +65,9 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
           currentStep = PhotoBoothStep.frameSelection;
           break;
         case PhotoBoothStep.frameSelection:
+          currentStep = PhotoBoothStep.cameraTest;
+          break;
+        case PhotoBoothStep.cameraTest:
           currentStep = PhotoBoothStep.photoCapture;
           break;
         case PhotoBoothStep.photoCapture:
@@ -93,8 +97,11 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
         case PhotoBoothStep.frameSelection:
           currentStep = PhotoBoothStep.welcome;
           break;
-        case PhotoBoothStep.photoCapture:
+        case PhotoBoothStep.cameraTest:
           currentStep = PhotoBoothStep.frameSelection;
+          break;
+        case PhotoBoothStep.photoCapture:
+          currentStep = PhotoBoothStep.cameraTest;
           break;
         case PhotoBoothStep.photoSelection:
           currentStep = PhotoBoothStep.photoCapture;
@@ -156,16 +163,18 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
         return '시작';
       case PhotoBoothStep.frameSelection:
         return '1 / 8';
-      case PhotoBoothStep.photoCapture:
+      case PhotoBoothStep.cameraTest:
         return '2 / 8';
-      case PhotoBoothStep.photoSelection:
+      case PhotoBoothStep.photoCapture:
         return '3 / 8';
-      case PhotoBoothStep.filterSelection:
+      case PhotoBoothStep.photoSelection:
         return '4 / 8';
-      case PhotoBoothStep.review:
+      case PhotoBoothStep.filterSelection:
         return '5 / 8';
-      case PhotoBoothStep.download:
+      case PhotoBoothStep.review:
         return '6 / 8';
+      case PhotoBoothStep.download:
+        return '7 / 8';
       default:
         return '';
     }
@@ -183,6 +192,13 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
           selectedFrame: selectedFrame,
           onFrameSelected: _updateFrame,
           onNext: selectedFrame != null ? _nextStep : null,
+          onBack: _previousStep,
+          currentStep: _getCurrentStepText(),
+        );
+      case PhotoBoothStep.cameraTest:
+        return CameraTestScreen(
+          cameraService: cameraService,
+          onNext: _nextStep,
           onBack: _previousStep,
           currentStep: _getCurrentStepText(),
         );
@@ -224,7 +240,9 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
       case PhotoBoothStep.download:
         return DownloadScreen(
           downloadUrl: downloadUrl,
+          videoUrl: cameraService.recordedVideoUrl,
           onRestart: _resetToWelcome,
+          onVideoDownload: () => cameraService.downloadVideo(),
           currentStep: _getCurrentStepText(),
         );
       default:

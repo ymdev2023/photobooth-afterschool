@@ -3,7 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import '../widgets/common_widgets.dart';
 import '../services/camera_service.dart';
 import 'dart:html' as html;
-import 'dart:ui' as ui;
+import 'dart:ui_web' as ui_web;
 import 'dart:async';
 import 'dart:typed_data';
 
@@ -28,8 +28,6 @@ class PhotoCaptureScreen extends StatefulWidget {
 class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
   int _countdown = 0;
   int _intervalCountdown = 0; // 촬영 간격 카운트다운
-  bool _isInitializing = false;
-  String? _errorMessage;
   bool _isCaptureFlash = false; // 촬영 플래시 효과
   XFile? _previewPhoto; // 촬영 결과 미리보기용
   bool _showPreview = false; // 미리보기 표시 여부
@@ -38,31 +36,7 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
   @override
   void initState() {
     super.initState();
-    _initializeCamera();
-  }
-
-  Future<void> _initializeCamera() async {
-    setState(() {
-      _isInitializing = true;
-      _errorMessage = null;
-    });
-
-    try {
-      await widget.cameraService.setupWebCamera();
-      if (!widget.cameraService.isWebCameraInitialized) {
-        setState(() {
-          _errorMessage = '카메라를 초기화할 수 없습니다. 브라우저에서 카메라 권한을 허용해주세요.';
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _errorMessage = '카메라 오류: ${e.toString()}';
-      });
-    } finally {
-      setState(() {
-        _isInitializing = false;
-      });
-    }
+    // 카메라는 이미 테스트 단계에서 초기화되었음
   }
 
   @override
@@ -73,8 +47,28 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
         padding: EdgeInsets.all(20),
         child: Column(
           children: [
-            _buildCameraStepHeader(),
-            SizedBox(height: 40),
+            _buildCaptureStepHeader(),
+            SizedBox(height: 20),
+            // 사진 촬영 안내 텍스트
+            Container(
+              padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+              decoration: BoxDecoration(
+                color: Colors.pink.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(10),
+                border:
+                    Border.all(color: Colors.pink.withOpacity(0.3), width: 1),
+              ),
+              child: Text(
+                '📸 이제 본격적으로 사진을 촬영합니다!\n포즈를 취하고 준비되면 촬영 시작 버튼을 눌러주세요',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            SizedBox(height: 20),
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
@@ -96,7 +90,7 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
                         child: _buildCameraContent(),
                       ),
                     ),
-                    // 카운트다운 오버레이 - 깜박임 없이 부드러운 전환
+                    // 카운트다운 오버레이
                     if (_countdown > 0)
                       Container(
                         width: double.infinity,
@@ -144,7 +138,7 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
                           borderRadius: BorderRadius.circular(18),
                         ),
                       ),
-                    // 촬영 결과 미리보기 오버레이 - 전체 화면 크기
+                    // 촬영 결과 미리보기 오버레이
                     if (_showPreview && _previewPhoto != null)
                       Container(
                         width: double.infinity,
@@ -208,7 +202,7 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
                               ),
                               SizedBox(height: 30),
                               Text(
-                                '사진을 처리하고 있습니다...',
+                                '멋진 사진들이 완성되었습니다!',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 18,
@@ -217,7 +211,7 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
                               ),
                               SizedBox(height: 10),
                               Text(
-                                '잠시만 기다려 주세요',
+                                '사진을 처리하고 있습니다...',
                                 style: TextStyle(
                                   color: Colors.white70,
                                   fontSize: 14,
@@ -281,7 +275,6 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
   void _startCapture() {
     widget.cameraService.startContinuousCapture(
       onCountdownUpdate: (countdown) {
-        // 카운트다운이 실제로 변경된 경우에만 setState 호출
         if (_countdown != countdown) {
           setState(() {
             _countdown = countdown;
@@ -289,7 +282,6 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
         }
       },
       onIntervalUpdate: (intervalCountdown) {
-        // 간격 카운트다운 업데이트
         if (_intervalCountdown != intervalCountdown) {
           setState(() {
             _intervalCountdown = intervalCountdown;
@@ -297,7 +289,6 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
         }
       },
       onCaptureComplete: () {
-        // 촬영 완료 후 로딩 화면 표시
         setState(() {
           _countdown = 0;
           _intervalCountdown = 0;
@@ -307,7 +298,7 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
           _isProcessing = true;
         });
 
-        // 3초 후 다음 화면으로 이동 (로딩 시간 시뮬레이션)
+        // 3초 후 다음 화면으로 이동
         Timer(Duration(seconds: 3), () {
           if (mounted) {
             setState(() {
@@ -318,12 +309,10 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
         });
       },
       onPhotoTaken: () {
-        // 촬영 시 플래시 효과
         setState(() {
           _isCaptureFlash = true;
         });
 
-        // 1초 후 플래시 효과 제거
         Timer(Duration(seconds: 1), () {
           if (mounted) {
             setState(() {
@@ -333,13 +322,11 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
         });
       },
       onPhotoPreview: (photo) {
-        // 촬영 결과 미리보기
         setState(() {
           _previewPhoto = photo;
           _showPreview = true;
         });
 
-        // 1초 후 미리보기 숨김
         Timer(Duration(seconds: 1), () {
           if (mounted) {
             setState(() {
@@ -352,60 +339,6 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
   }
 
   Widget _buildCameraContent() {
-    if (_isInitializing) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.pink),
-            ),
-            SizedBox(height: 20),
-            Text(
-              '카메라를 초기화하는 중...',
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 16,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (_errorMessage != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.camera_alt_outlined,
-              size: 80,
-              color: Colors.red.shade300,
-            ),
-            SizedBox(height: 20),
-            Text(
-              _errorMessage!,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.red.shade300,
-                fontSize: 16,
-              ),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _initializeCamera,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.pink,
-                foregroundColor: Colors.white,
-              ),
-              child: Text('다시 시도'),
-            ),
-          ],
-        ),
-      );
-    }
-
     if (!widget.cameraService.isWebCameraInitialized) {
       return Center(
         child: Column(
@@ -418,7 +351,7 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
             ),
             SizedBox(height: 20),
             Text(
-              '카메라 준비 중...',
+              '카메라 연결을 확인하는 중...',
               style: TextStyle(
                 color: Colors.white70,
                 fontSize: 16,
@@ -429,7 +362,6 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
       );
     }
 
-    // 카메라가 초기화된 경우 실제 비디오 스트림 표시
     return ClipRRect(
       borderRadius: BorderRadius.circular(18),
       child: Container(
@@ -453,19 +385,17 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
       );
     }
 
-    // 웹에서는 HTML video 요소 사용
-    final viewId = 'video-${DateTime.now().millisecondsSinceEpoch}';
+    final viewId = 'video-capture-${DateTime.now().millisecondsSinceEpoch}';
     final videoElement = html.VideoElement()
       ..srcObject = widget.cameraService.mediaStream
       ..autoplay = true
       ..muted = true
       ..style.width = '100%'
       ..style.height = '100%'
-      ..style.objectFit = 'cover'
+      ..style.objectFit = 'cover' // 촬영용은 cover로 사용
       ..style.transform = 'scaleX(-1)'; // 미러 효과
 
-    // ignore: undefined_prefixed_name
-    ui.platformViewRegistry.registerViewFactory(
+    ui_web.platformViewRegistry.registerViewFactory(
       viewId,
       (int viewId) => videoElement,
     );
@@ -473,7 +403,7 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
     return HtmlElementView(viewType: viewId);
   }
 
-  Widget _buildCameraStepHeader() {
+  Widget _buildCaptureStepHeader() {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 20, horizontal: 30),
       child: Row(
@@ -487,24 +417,23 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
               color: Colors.white,
             ),
           ),
-          // 헤더의 원형 카운트다운 인디케이터 (깜박임 방지)
+          // 촬영 진행 상태 표시
           Container(
             width: 60,
             height: 60,
             child: widget.cameraService.isCapturing && _intervalCountdown > 0
                 ? Container(
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.7),
+                      color: Colors.pink.withOpacity(0.8),
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.3),
+                        color: Colors.white.withOpacity(0.8),
                         width: 2,
                       ),
                     ),
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        // 원형 프로그레스 인디케이터
                         SizedBox(
                           width: 45,
                           height: 45,
@@ -512,11 +441,10 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
                             value: (_intervalCountdown) / 10.0,
                             strokeWidth: 3,
                             valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.pink),
+                                AlwaysStoppedAnimation<Color>(Colors.white),
                             backgroundColor: Colors.white.withOpacity(0.3),
                           ),
                         ),
-                        // 남은 시간 텍스트
                         Text(
                           _intervalCountdown.toString(),
                           style: TextStyle(
@@ -528,7 +456,7 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen> {
                       ],
                     ),
                   )
-                : SizedBox.shrink(), // step indicator 완전 제거
+                : SizedBox.shrink(),
           ),
         ],
       ),

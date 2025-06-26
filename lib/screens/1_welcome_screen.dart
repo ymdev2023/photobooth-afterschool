@@ -135,7 +135,7 @@ class WelcomeScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'v1.0.4 (2025.06.22)',
+                            'v2.3.0 (2025.06.26)',
                             style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -153,7 +153,7 @@ class WelcomeScreen extends StatelessWidget {
                           ),
                           SizedBox(height: 4),
                           Text(
-                            '• 모든 화면에서 step indicator 제거로 깔끔한 UI\n• 헤더에 원형 카운트다운 타이머 통합\n• 다운로드 화면에 실제 QR코드 생성\n• 사진/영상 다운로드 버튼 추가\n• 화면 깜박임 현상 완전 해결',
+                            '• 카메라 테스트와 사진 촬영 화면 분리\n• 카메라 테스트: 얼굴 전체 확인 가능 (contain 모드)\n• 실제 촬영: 전용 화면으로 사용성 개선\n• 파일명에 숫자 접두어로 진행 순서 명확화\n• 8단계 워크플로우로 체계적인 사용자 경험',
                             style: TextStyle(
                               color: Colors.white60,
                               fontSize: isWideScreen ? 13 : 11,
