@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import '../services/frame_composition_service.dart';
+import 'dart:typed_data';
 
 class DownloadScreen extends StatelessWidget {
   final String? downloadUrl;
   final String? videoUrl;
+  final Uint8List? finalImage; // 최종 프레임 이미지 추가
   final VoidCallback onRestart;
   final VoidCallback? onVideoDownload;
   final String currentStep;
@@ -12,6 +15,7 @@ class DownloadScreen extends StatelessWidget {
     Key? key,
     required this.downloadUrl,
     this.videoUrl,
+    this.finalImage, // 최종 이미지 파라미터 추가
     required this.onRestart,
     this.onVideoDownload,
     required this.currentStep,
@@ -129,9 +133,7 @@ class DownloadScreen extends StatelessWidget {
                                 ),
                               ),
                               ElevatedButton.icon(
-                                onPressed: () {
-                                  // TODO: 사진 다운로드 기능 구현
-                                },
+                                onPressed: finalImage != null ? _downloadFinalImage : null,
                                 icon: Icon(Icons.photo),
                                 label: Text('사진 다운로드'),
                                 style: ElevatedButton.styleFrom(
@@ -182,5 +184,14 @@ class DownloadScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// 최종 프레임 이미지를 다운로드합니다.
+  void _downloadFinalImage() {
+    if (finalImage != null) {
+      final filename = 'photobooth_final_${DateTime.now().millisecondsSinceEpoch}.png';
+      FrameCompositionService.downloadImage(finalImage!, filename);
+      print('✅ 최종 프레임 이미지 다운로드 시작: $filename');
+    }
   }
 }

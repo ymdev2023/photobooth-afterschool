@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:typed_data';
 import 'package:image_picker/image_picker.dart';
 import '../widgets/common_widgets.dart';
+import '../services/frame_composition_service.dart';
 
 class FilterSelectionScreen extends StatefulWidget {
   final String? selectedFilter;
@@ -514,24 +515,29 @@ class _FilterSelectionScreenState extends State<FilterSelectionScreen> {
       print('선택된 필터: ${widget.selectedFilter}');
       print('선택된 사진 수: ${widget.selectedPhotos.length}');
 
-      // 웹에서는 복잡한 Canvas 작업 대신 간단한 방법 사용
-      // 현재는 프레임 미리보기가 제대로 보이고 있으므로
-      // 임시로 모든 사진을 하나의 collage 형태로 만들어보겠습니다
-
       if (widget.selectedPhotos.isEmpty) {
         throw Exception('선택된 사진이 없습니다');
       }
 
-      // 우선 첫 번째 사진을 기본으로 반환하되
-      // 나중에 실제 프레임 조합 기능을 추가할 예정
-      final firstPhoto = widget.selectedPhotos.first;
-      final photoBytes = await firstPhoto.readAsBytes();
+      // HTML Canvas를 사용하여 실제 프레임 합성 수행
+      final frameBytes = await FrameCompositionService.composeWithFrame(
+        photos: widget.selectedPhotos,
+        frameType: widget.selectedFrame ?? 'classic_4cut',
+        width: 800,
+        height: 1200,
+      );
 
-      print('✅ 임시 이미지 생성 완료 (첫 번째 사진), 크기: ${photoBytes.length} bytes');
-      print('⚠️ 주의: 현재는 프레임 조합이 아닌 첫 번째 사진만 반환 중입니다');
-      print('    추후 Canvas를 사용한 실제 프레임 조합 기능을 구현할 예정입니다');
+      // 필터 적용 (현재는 Original만 지원, 추후 확장 가능)
+      if (widget.selectedFilter != null &&
+          widget.selectedFilter != 'Original') {
+        print('⚠️ 현재는 Original 필터만 지원됩니다. 선택된 필터: ${widget.selectedFilter}');
+        // TODO: 필터 효과 구현 (세피아, 흑백 등)
+      }
 
-      return photoBytes;
+      print('✅ 프레임 합성 완료, 크기: ${frameBytes.length} bytes');
+      print('🎨 최종 이미지가 성공적으로 생성되었습니다');
+
+      return frameBytes;
     } catch (e) {
       print('❌ 이미지 생성 중 오류: $e');
       // 오류 발생 시 첫 번째 사진 반환

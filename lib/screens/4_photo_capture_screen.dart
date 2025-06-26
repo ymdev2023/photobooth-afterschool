@@ -35,6 +35,7 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen>
   // 상태 관리를 위한 ValueNotifier들 (setState 대신 사용)
   final ValueNotifier<int> _countdown = ValueNotifier<int>(0);
   final ValueNotifier<int> _intervalCountdown = ValueNotifier<int>(0);
+  final ValueNotifier<int> _captureCount = ValueNotifier<int>(0); // 촬영 카운트 추가
   final ValueNotifier<bool> _isCaptureFlash = ValueNotifier<bool>(false);
   final ValueNotifier<bool> _showPreview = ValueNotifier<bool>(false);
   final ValueNotifier<bool> _isProcessing = ValueNotifier<bool>(false);
@@ -68,6 +69,7 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen>
     _progressController.dispose();
     _countdown.dispose();
     _intervalCountdown.dispose();
+    _captureCount.dispose(); // 촬영 카운트 dispose 추가
     _isCaptureFlash.dispose();
     _showPreview.dispose();
     _isProcessing.dispose();
@@ -219,7 +221,8 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen>
                                             ..scale(-1.0, 1.0), // 좌우반전
                                           child: Image.memory(
                                             snapshot.data!,
-                                            fit: BoxFit.cover, // 정방형 영역 내에서 cover
+                                            fit: BoxFit
+                                                .cover, // 정방형 영역 내에서 cover
                                           ),
                                         ),
                                       ),
@@ -354,6 +357,11 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen>
           _intervalCountdown.value = intervalCountdown;
         }
       },
+      onCaptureCountUpdate: (captureCount) {
+        if (_captureCount.value != captureCount) {
+          _captureCount.value = captureCount;
+        }
+      },
       onCaptureComplete: () {
         print('📸 촬영 완료 콜백 호출됨');
         final capturedPhotos = widget.cameraService.getCapturedPhotos();
@@ -364,6 +372,7 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen>
 
         _countdown.value = 0;
         _intervalCountdown.value = 0;
+        _captureCount.value = 0; // 촬영 카운트 초기화
         _isCaptureFlash.value = false;
         _showPreview.value = false;
         _previewPhoto = null;
@@ -473,13 +482,42 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            '사진을 촬영해주세요',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '사진을 촬영해주세요',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              SizedBox(height: 5),
+              // 촬영 진행 상황 표시
+              ValueListenableBuilder<int>(
+                valueListenable: _captureCount,
+                builder: (context, captureCount, child) {
+                  if (!widget.cameraService.isCapturing || captureCount == 0) {
+                    return Text(
+                      '총 8장의 사진을 촬영합니다',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
+                    );
+                  }
+                  return Text(
+                    '📸 ${captureCount}/8 장 촬영 완료',
+                    style: TextStyle(
+                      color: Colors.pink.shade300,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
           // 촬영 진행 상태 표시 - ValueListenableBuilder로 깜박임 방지
           Container(
@@ -508,7 +546,7 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen>
                         width: 45,
                         height: 45,
                         child: CircularProgressIndicator(
-                          value: intervalCountdown / 10.0,
+                          value: intervalCountdown / 5.0, // 5초로 변경
                           strokeWidth: 3,
                           valueColor:
                               AlwaysStoppedAnimation<Color>(Colors.white),

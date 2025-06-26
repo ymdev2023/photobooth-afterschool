@@ -130,6 +130,7 @@ class CameraService {
     VoidCallback? onPhotoTaken,
     Function(int)? onIntervalUpdate, // 촬영 간격 업데이트 콜백 추가
     Function(XFile)? onPhotoPreview, // 촬영 결과 미리보기 콜백 추가
+    Function(int)? onCaptureCountUpdate, // 촬영 카운트 업데이트 콜백 추가
   }) async {
     if (_isCapturing) return;
 
@@ -151,8 +152,8 @@ class CameraService {
       } else {
         timer.cancel();
         onCountdownUpdate(0); // 카운트다운 완료 알림
-        _startCapturingPhotos(
-            onCaptureComplete, onPhotoTaken, onIntervalUpdate, onPhotoPreview);
+        _startCapturingPhotos(onCaptureComplete, onPhotoTaken, onIntervalUpdate,
+            onPhotoPreview, onCaptureCountUpdate);
       }
     });
   }
@@ -161,10 +162,12 @@ class CameraService {
       VoidCallback onCaptureComplete,
       VoidCallback? onPhotoTaken,
       Function(int)? onIntervalUpdate,
-      Function(XFile)? onPhotoPreview) async {
+      Function(XFile)? onPhotoPreview,
+      Function(int)? onCaptureCountUpdate) async {
     // 첫 번째 사진을 바로 촬영
     XFile? capturedPhoto = await _capturePhoto();
     _captureCount++;
+    onCaptureCountUpdate?.call(_captureCount); // 촬영 카운트 업데이트 콜백
 
     if (capturedPhoto != null) {
       onPhotoPreview?.call(capturedPhoto); // 촬영 결과 미리보기
@@ -195,6 +198,7 @@ class CameraService {
       if (_captureCount < 8) {
         XFile? capturedPhoto = await _capturePhoto();
         _captureCount++;
+        onCaptureCountUpdate?.call(_captureCount); // 촬영 카운트 업데이트 콜백
 
         if (capturedPhoto != null) {
           onPhotoPreview?.call(capturedPhoto); // 촬영 결과 미리보기

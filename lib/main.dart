@@ -246,6 +246,7 @@ class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
         return DownloadScreen(
           downloadUrl: downloadUrl,
           videoUrl: cameraService.recordedVideoUrl,
+          finalImage: filteredImage, // 최종 프레임 이미지 전달
           onRestart: _resetToWelcome,
           onVideoDownload: () => cameraService.downloadVideo(),
           currentStep: _getCurrentStepText(),

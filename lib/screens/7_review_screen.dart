@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:typed_data';
+import '../services/frame_composition_service.dart';
 
 class ReviewScreen extends StatelessWidget {
   final Uint8List? filteredImage;
@@ -105,6 +106,34 @@ class ReviewScreen extends StatelessWidget {
                       ],
                     ),
                   ),
+                  // 즉시 다운로드 버튼 추가
+                  ElevatedButton(
+                    onPressed: filteredImage != null ? _downloadImage : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                      elevation: 5,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.download),
+                        SizedBox(width: 8),
+                        Text(
+                          '다운로드',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                   ElevatedButton(
                     onPressed: onNext,
                     style: ElevatedButton.styleFrom(
@@ -181,6 +210,18 @@ class ReviewScreen extends StatelessWidget {
           ),
         ),
       );
+    }
+  }
+
+  /// 이미지를 다운로드합니다.
+  void _downloadImage() {
+    if (filteredImage != null) {
+      final filename =
+          'photobooth_review_${DateTime.now().millisecondsSinceEpoch}.png';
+      FrameCompositionService.downloadImage(filteredImage!, filename);
+
+      // 성공 메시지 표시 (선택사항)
+      print('✅ 리뷰 이미지 다운로드 시작: $filename');
     }
   }
 }
