@@ -461,7 +461,7 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen>
                 builder: (context, captureCount, child) {
                   if (!widget.cameraService.isCapturing || captureCount == 0) {
                     return Text(
-                      '총 8장의 사진을 촬영합니다',
+                      '총 4장의 사진을 촬영합니다',
                       style: TextStyle(
                         color: Colors.white70,
                         fontSize: 14,
@@ -469,7 +469,7 @@ class _PhotoCaptureScreenState extends State<PhotoCaptureScreen>
                     );
                   }
                   return Text(
-                    '📸 ${captureCount}/8 장 촬영 완료',
+                    '📸 ${captureCount}/4 장 촬영 완료',
                     style: TextStyle(
                       color: Colors.pink.shade300,
                       fontSize: 16,

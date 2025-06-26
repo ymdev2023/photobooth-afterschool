@@ -167,7 +167,8 @@ class FrameSelectionScreen extends StatelessWidget {
                                   Expanded(
                                     flex: 1,
                                     child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         Text(
                                           frameColor['name'],

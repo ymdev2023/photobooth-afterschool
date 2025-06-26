@@ -42,11 +42,20 @@ class WelcomeScreen extends StatelessWidget {
                         ),
                         SizedBox(height: 20),
                         Text(
-                          '기억에 남는 사진을 찍어보세요!',
+                          '클래식 4컷 인생사진을 만들어보세요!',
                           style: TextStyle(
                             fontSize: subtitleSize,
                             color: Colors.white70,
                           ),
+                        ),
+                        SizedBox(height: 10),
+                        Text(
+                          '6가지 아름다운 색상 프레임으로 완성하는 특별한 추억',
+                          style: TextStyle(
+                            fontSize: isWideScreen ? 18 : 16,
+                            color: Colors.white60,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
                         SizedBox(height: 60),
                         ElevatedButton(
@@ -134,26 +143,25 @@ class WelcomeScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'v2.6.0 (2025.06.26)',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: isWideScreen ? 16 : 14,
-                            ),
+                          Text(                          'v2.7.0 (2025.06.26)',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: isWideScreen ? 16 : 14,
                           ),
-                          SizedBox(height: 8),
-                          Text(
-                            '최신 업데이트:',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontWeight: FontWeight.w600,
-                              fontSize: isWideScreen ? 14 : 12,
-                            ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          '최신 업데이트:',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontWeight: FontWeight.w600,
+                            fontSize: isWideScreen ? 14 : 12,
                           ),
-                          SizedBox(height: 4),
-                          Text(
-                            '• 촬영 시 플래시(깜박임) 효과 완전 제거\n• HTML Canvas 프레임 합성 기능 개선\n• 리뷰/다운로드 스크린 프레임 미리보기 최적화\n• 사진 다운로드 기능 안정성 향상\n• 부드러운 촬영 경험 제공',
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          '• 모든 프레임을 클래식 4컷 스타일로 통일\n• 6가지 아름다운 색상 프레임 제공 (화이트, 핑크, 블루, 그린, 퍼플, 오렌지)\n• 간편한 색상 선택으로 더욱 직관적인 사용자 경험\n• 1:10 세로 비율로 완벽한 포토부스 스타일 구현\n• 일관된 4장 사진 선택으로 단순화된 워크플로우',
                             style: TextStyle(
                               color: Colors.white60,
                               fontSize: isWideScreen ? 13 : 11,

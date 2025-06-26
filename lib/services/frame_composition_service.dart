@@ -152,7 +152,7 @@ class FrameCompositionService {
   ) async {
     // 프레임 색상 정보 가져오기
     final frameInfo = _getFrameColorInfo(frameType);
-    
+
     // 프레임 외곽선
     ctx.strokeStyle = frameInfo['borderColor'];
     ctx.lineWidth = 4;
