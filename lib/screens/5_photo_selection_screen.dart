@@ -309,7 +309,7 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen> {
         crossAxisCount: crossAxisCount,
         crossAxisSpacing: 15,
         mainAxisSpacing: 15,
-        childAspectRatio: 1 / 10, // 1:10 비율로 변경
+        childAspectRatio: 4 / 3, // 개별 사진은 4:3 비율로 표시
       ),
       itemCount: widget.capturedPhotos.length,
       itemBuilder: (context, index) {
