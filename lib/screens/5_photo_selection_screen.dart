@@ -235,14 +235,8 @@ class _PhotoSelectionScreenState extends State<PhotoSelectionScreen> {
   }
 
   int _getRequiredPhotoCount(String? frameType) {
-    switch (frameType) {
-      case 'classic_4cut':
-        return 4;
-      case 'grid_6cut':
-        return 6;
-      default:
-        return 4;
-    }
+    // 모든 프레임이 4컷으로 통일
+    return 4;
   }
 
   void _togglePhotoSelection(XFile photo, int requiredCount) {

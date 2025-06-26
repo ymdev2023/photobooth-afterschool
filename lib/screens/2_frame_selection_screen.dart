@@ -19,24 +19,55 @@ class FrameSelectionScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<Map<String, dynamic>> frames = [
+    // 4컷 프레임의 다양한 색상 옵션
+    final List<Map<String, dynamic>> frameColors = [
       {
-        'name': '4컷 프레임',
-        'description': '세로로 긴 클래식 4컷',
-        'path': 'classic_4cut',
-        'cuts': 4,
-        'layout': 'vertical',
-        'color': Colors.white,
+        'name': '클래식 화이트',
+        'description': '깔끔하고 심플한 화이트 프레임',
+        'path': 'classic_4cut_white',
+        'backgroundColor': Colors.white,
         'borderColor': Colors.grey.shade400,
+        'accentColor': Colors.grey.shade600,
       },
       {
-        'name': '6컷 프레임',
-        'description': '3x2 배치 프레임',
-        'path': 'grid_6cut',
-        'cuts': 6,
-        'layout': 'grid',
-        'color': Colors.pink.shade50,
-        'borderColor': Colors.pink.shade200,
+        'name': '로즈 핑크',
+        'description': '사랑스러운 핑크 컬러 프레임',
+        'path': 'classic_4cut_pink',
+        'backgroundColor': Colors.pink.shade50,
+        'borderColor': Colors.pink.shade300,
+        'accentColor': Colors.pink,
+      },
+      {
+        'name': '스카이 블루',
+        'description': '상큼한 블루 컬러 프레임',
+        'path': 'classic_4cut_blue',
+        'backgroundColor': Colors.blue.shade50,
+        'borderColor': Colors.blue.shade300,
+        'accentColor': Colors.blue,
+      },
+      {
+        'name': '민트 그린',
+        'description': '싱그러운 그린 컬러 프레임',
+        'path': 'classic_4cut_green',
+        'backgroundColor': Colors.green.shade50,
+        'borderColor': Colors.green.shade300,
+        'accentColor': Colors.green,
+      },
+      {
+        'name': '라벤더 퍼플',
+        'description': '우아한 퍼플 컬러 프레임',
+        'path': 'classic_4cut_purple',
+        'backgroundColor': Colors.purple.shade50,
+        'borderColor': Colors.purple.shade300,
+        'accentColor': Colors.purple,
+      },
+      {
+        'name': '선셋 오렌지',
+        'description': '따뜻한 오렌지 컬러 프레임',
+        'path': 'classic_4cut_orange',
+        'backgroundColor': Colors.orange.shade50,
+        'borderColor': Colors.orange.shade300,
+        'accentColor': Colors.orange,
       },
     ];
 
@@ -47,13 +78,22 @@ class FrameSelectionScreen extends StatelessWidget {
           padding: EdgeInsets.all(20),
           child: Column(
             children: [
-              // 제목만 표시, step indicator 제거
+              // 제목
               Text(
-                '프레임을 선택해주세요',
+                '프레임 색상을 선택해주세요',
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 10),
+              Text(
+                '모든 프레임은 클래식 4컷 스타일입니다',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey.shade600,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -63,34 +103,34 @@ class FrameSelectionScreen extends StatelessWidget {
                   builder: (context, constraints) {
                     // 화면 크기에 따라 그리드 설정 조정
                     final isWideScreen = constraints.maxWidth > 600;
-                    final crossAxisCount = isWideScreen ? 2 : 1;
-                    final childAspectRatio = isWideScreen ? 1.8 : 2.2;
+                    final crossAxisCount = isWideScreen ? 3 : 2;
+                    final childAspectRatio = isWideScreen ? 1.2 : 1.0;
 
                     return GridView.builder(
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: crossAxisCount,
                         childAspectRatio: childAspectRatio,
-                        mainAxisSpacing: 20,
-                        crossAxisSpacing: 20,
+                        mainAxisSpacing: 15,
+                        crossAxisSpacing: 15,
                       ),
-                      itemCount: frames.length,
+                      itemCount: frameColors.length,
                       itemBuilder: (context, index) {
-                        final frame = frames[index];
-                        final isSelected = selectedFrame == frame['path'];
+                        final frameColor = frameColors[index];
+                        final isSelected = selectedFrame == frameColor['path'];
 
                         return GestureDetector(
                           onTap: () {
-                            onFrameSelected(frame['path']);
+                            onFrameSelected(frameColor['path']);
                           },
                           child: Container(
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? Colors.pink.shade100
+                                  ? frameColor['accentColor'].withOpacity(0.1)
                                   : Colors.white,
                               borderRadius: BorderRadius.circular(15),
                               border: Border.all(
                                 color: isSelected
-                                    ? Colors.pink
+                                    ? frameColor['accentColor']
                                     : Colors.grey.shade300,
                                 width: isSelected ? 3 : 1,
                               ),
@@ -103,75 +143,52 @@ class FrameSelectionScreen extends StatelessWidget {
                               ],
                             ),
                             child: Padding(
-                              padding: EdgeInsets.all(20),
-                              child: Row(
+                              padding: EdgeInsets.all(15),
+                              child: Column(
                                 children: [
-                                  // 프레임 미리보기 - 크기 조정
-                                  Container(
-                                    width: isWideScreen ? 100 : 80,
-                                    height: isWideScreen ? 120 : 100,
-                                    decoration: BoxDecoration(
-                                      color: frame['color'],
-                                      borderRadius: BorderRadius.circular(10),
-                                      border: Border.all(
-                                        color: frame['borderColor'],
-                                        width: 2,
-                                      ),
-                                    ),
-                                    child: _buildFramePreview(frame),
-                                  ),
-                                  SizedBox(width: 20),
-                                  // 프레임 정보
+                                  // 프레임 미리보기
                                   Expanded(
+                                    flex: 3,
+                                    child: Container(
+                                      width: double.infinity,
+                                      decoration: BoxDecoration(
+                                        color: frameColor['backgroundColor'],
+                                        borderRadius: BorderRadius.circular(10),
+                                        border: Border.all(
+                                          color: frameColor['borderColor'],
+                                          width: 2,
+                                        ),
+                                      ),
+                                      child: _buildFramePreview(frameColor),
+                                    ),
+                                  ),
+                                  SizedBox(height: 10),
+                                  // 색상 이름
+                                  Expanded(
+                                    flex: 1,
                                     child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
+                                      mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
                                         Text(
-                                          frame['name'],
+                                          frameColor['name'],
                                           style: TextStyle(
-                                            fontSize: isWideScreen ? 20 : 18,
+                                            fontSize: 14,
                                             fontWeight: FontWeight.bold,
                                             color: Colors.black87,
                                           ),
+                                          textAlign: TextAlign.center,
                                         ),
-                                        SizedBox(height: 5),
-                                        Text(
-                                          frame['description'],
-                                          style: TextStyle(
-                                            fontSize: isWideScreen ? 16 : 14,
-                                            color: Colors.grey.shade600,
+                                        if (isSelected) ...[
+                                          SizedBox(height: 5),
+                                          Icon(
+                                            Icons.check_circle,
+                                            color: frameColor['accentColor'],
+                                            size: 20,
                                           ),
-                                        ),
-                                        SizedBox(height: 8),
-                                        Row(
-                                          children: [
-                                            Icon(
-                                              Icons.photo_camera,
-                                              size: 16,
-                                              color: Colors.grey.shade500,
-                                            ),
-                                            SizedBox(width: 4),
-                                            Text(
-                                              '${frame['cuts']}컷',
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.grey.shade500,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
+                                        ],
                                       ],
                                     ),
                                   ),
-                                  if (isSelected)
-                                    Icon(
-                                      Icons.check_circle,
-                                      color: Colors.pink,
-                                      size: 30,
-                                    ),
                                 ],
                               ),
                             ),
@@ -194,80 +211,38 @@ class FrameSelectionScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFramePreview(Map<String, dynamic> frame) {
-    final cuts = frame['cuts'] as int;
-    final layout = frame['layout'] as String;
-
-    if (layout == 'vertical') {
-      // 4컷 프레임 - 1x4 세로 배치
-      return Column(
+  Widget _buildFramePreview(Map<String, dynamic> frameColor) {
+    // 항상 4컷 프레임 - 1x4 세로 배치
+    return Padding(
+      padding: EdgeInsets.all(8),
+      child: Column(
         children: List.generate(
-          cuts,
+          4,
           (index) => Expanded(
             child: Container(
-              margin: EdgeInsets.all(2),
+              margin: EdgeInsets.symmetric(vertical: 2),
               decoration: BoxDecoration(
                 color: Colors.grey.shade200,
                 borderRadius: BorderRadius.circular(3),
+                border: Border.all(
+                  color: frameColor['borderColor'],
+                  width: 0.5,
+                ),
               ),
-            ),
-          ),
-        ),
-      );
-    } else if (layout == 'grid') {
-      // 6컷 프레임 - 3x2 그리드 배치
-      return Column(
-        children: [
-          Expanded(
-            child: Row(
-              children: List.generate(
-                3,
-                (index) => Expanded(
-                  child: Container(
-                    margin: EdgeInsets.all(1),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade200,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
+              child: Center(
+                child: Text(
+                  '${index + 1}',
+                  style: TextStyle(
+                    fontSize: 8,
+                    color: Colors.grey.shade500,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
             ),
           ),
-          Expanded(
-            child: Row(
-              children: List.generate(
-                3,
-                (index) => Expanded(
-                  child: Container(
-                    margin: EdgeInsets.all(1),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade200,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
-    } else {
-      // 스트립 프레임 - 가로 배치
-      return Row(
-        children: List.generate(
-          cuts,
-          (index) => Expanded(
-            child: Container(
-              margin: EdgeInsets.all(2),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(3),
-              ),
-            ),
-          ),
         ),
-      );
-    }
+      ),
+    );
   }
 }

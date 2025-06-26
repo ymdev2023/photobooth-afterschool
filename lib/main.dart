@@ -43,7 +43,7 @@ class PhotoBoothHomePage extends StatefulWidget {
 
 class _PhotoBoothHomePageState extends State<PhotoBoothHomePage> {
   PhotoBoothStep currentStep = PhotoBoothStep.welcome;
-  String? selectedFrame;
+  String? selectedFrame = 'classic_4cut_white'; // 기본 프레임을 화이트로 설정
   String? selectedFilter;
   List<XFile> capturedPhotos = [];
   List<XFile> selectedPhotos = [];

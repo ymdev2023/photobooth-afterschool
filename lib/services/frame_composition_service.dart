@@ -150,70 +150,65 @@ class FrameCompositionService {
     int width,
     int height,
   ) async {
-    // 기본적인 프레임 장식 그리기
-    ctx.strokeStyle = '#000000';
+    // 프레임 색상 정보 가져오기
+    final frameInfo = _getFrameColorInfo(frameType);
+    
+    // 프레임 외곽선
+    ctx.strokeStyle = frameInfo['borderColor'];
     ctx.lineWidth = 4;
+    ctx.strokeRect(20, 20, width - 40, height - 40);
 
-    switch (frameType) {
-      case 'classic_4cut':
-        // 클래식 4컷 프레임 장식
-        ctx.strokeRect(20, 20, width - 40, height - 40);
+    // 클래식 4컷 프레임 장식
+    final positions = getPhotoPositions(frameType, width, height);
+    for (int i = 1; i < positions.length; i++) {
+      final prevPos = positions[i - 1];
+      final currPos = positions[i];
 
-        // 사진 구분선
-        final positions = getPhotoPositions(frameType, width, height);
-        for (int i = 1; i < positions.length; i++) {
-          final prevPos = positions[i - 1];
-          final currPos = positions[i];
-
-          // 사진 간 구분선 그리기
-          if (currPos.y > prevPos.y + prevPos.height + 5) {
-            ctx.beginPath();
-            ctx.moveTo(30, currPos.y - 10);
-            ctx.lineTo(width - 30, currPos.y - 10);
-            ctx.stroke();
-          }
-        }
-        break;
-
-      case 'grid_6cut':
-        // 6컷 그리드 프레임 장식
-        ctx.strokeRect(15, 15, width - 30, height - 30);
-
-        // 세로 구분선
+      // 사진 간 구분선 그리기
+      if (currPos.y > prevPos.y + prevPos.height + 5) {
         ctx.beginPath();
-        ctx.moveTo(width / 2, 25);
-        ctx.lineTo(width / 2, height - 25);
+        ctx.moveTo(30, currPos.y - 10);
+        ctx.lineTo(width - 30, currPos.y - 10);
         ctx.stroke();
-
-        // 가로 구분선들
-        final positions = getPhotoPositions(frameType, width, height);
-        for (int i = 2; i < positions.length; i += 2) {
-          final pos = positions[i];
-          ctx.beginPath();
-          ctx.moveTo(25, pos.y - 10);
-          ctx.lineTo(width - 25, pos.y - 10);
-          ctx.stroke();
-        }
-        break;
+      }
     }
 
     // 타이틀 텍스트 추가
-    ctx.fillStyle = '#333333';
+    ctx.fillStyle = frameInfo['textColor'];
     ctx.font = 'bold 24px Arial, sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText('📸 인생네컷 📸', width / 2, height - 30);
   }
 
+  /// 프레임 색상 정보를 반환합니다.
+  static Map<String, String> _getFrameColorInfo(String frameType) {
+    switch (frameType) {
+      case 'classic_4cut_white':
+        return {'borderColor': '#9E9E9E', 'textColor': '#424242'};
+      case 'classic_4cut_pink':
+        return {'borderColor': '#F06292', 'textColor': '#E91E63'};
+      case 'classic_4cut_blue':
+        return {'borderColor': '#42A5F5', 'textColor': '#2196F3'};
+      case 'classic_4cut_green':
+        return {'borderColor': '#66BB6A', 'textColor': '#4CAF50'};
+      case 'classic_4cut_purple':
+        return {'borderColor': '#AB47BC', 'textColor': '#9C27B0'};
+      case 'classic_4cut_orange':
+        return {'borderColor': '#FF7043', 'textColor': '#FF5722'};
+      default:
+        return {'borderColor': '#000000', 'textColor': '#333333'};
+    }
+  }
+
   /// 프레임 타입에 따른 사진 배치 위치를 반환합니다.
   static List<PhotoPosition> getPhotoPositions(
       String frameType, int width, int height) {
-    switch (frameType) {
-      case 'classic_4cut':
-        return _getClassic4CutPositions(width, height);
-      case 'grid_6cut':
-        return _getGrid6CutPositions(width, height);
-      default:
-        return _getClassic4CutPositions(width, height);
+    // 모든 색상 프레임은 클래식 4컷 스타일로 통일
+    if (frameType.contains('classic_4cut')) {
+      return _getClassic4CutPositions(width, height);
+    } else {
+      // 기본값으로 4컷 사용
+      return _getClassic4CutPositions(width, height);
     }
   }
 
@@ -253,63 +248,6 @@ class FrameCompositionService {
         width: photoWidth,
         height: photoHeight,
         borderRadius: 8,
-      ),
-    ];
-  }
-
-  /// 6컷 그리드 배치 위치
-  static List<PhotoPosition> _getGrid6CutPositions(int width, int height) {
-    const margin = 30.0;
-    const spacing = 15.0;
-    final photoWidth = (width - (margin * 2) - spacing) / 2;
-    final availableHeight = height - (margin * 2) - 60; // 하단 텍스트 공간
-    final photoHeight = (availableHeight - (spacing * 2)) / 3;
-
-    return [
-      // 첫 번째 행
-      PhotoPosition(
-        x: margin,
-        y: margin,
-        width: photoWidth,
-        height: photoHeight,
-        borderRadius: 6,
-      ),
-      PhotoPosition(
-        x: margin + photoWidth + spacing,
-        y: margin,
-        width: photoWidth,
-        height: photoHeight,
-        borderRadius: 6,
-      ),
-      // 두 번째 행
-      PhotoPosition(
-        x: margin,
-        y: margin + photoHeight + spacing,
-        width: photoWidth,
-        height: photoHeight,
-        borderRadius: 6,
-      ),
-      PhotoPosition(
-        x: margin + photoWidth + spacing,
-        y: margin + photoHeight + spacing,
-        width: photoWidth,
-        height: photoHeight,
-        borderRadius: 6,
-      ),
-      // 세 번째 행
-      PhotoPosition(
-        x: margin,
-        y: margin + (photoHeight + spacing) * 2,
-        width: photoWidth,
-        height: photoHeight,
-        borderRadius: 6,
-      ),
-      PhotoPosition(
-        x: margin + photoWidth + spacing,
-        y: margin + (photoHeight + spacing) * 2,
-        width: photoWidth,
-        height: photoHeight,
-        borderRadius: 6,
       ),
     ];
   }
